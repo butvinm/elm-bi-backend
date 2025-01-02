@@ -1,0 +1,276 @@
+openapi: 3.0.0
+info:
+  title: Dashboard API
+  version: 1.0.0
+  description: API for managing dashboards and widgets.
+paths:
+  /get-dashboards:
+    post:
+      summary: Get a list of the created dashboards
+      responses:
+        '200':
+          description: List of dashboards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    dashboard_id:
+                      type: integer
+                    title:
+                      type: string
+                    widgets:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          widget_id:
+                            type: integer
+                          title:
+                            type: string
+                          table:
+                            type: string
+                          x:
+                            type: string
+                    dataSource:
+                      type: object
+                      properties:
+                        host:
+                          type: string
+                        port:
+                          type: integer
+                        username:
+                          type: string
+                        password:
+                          type: string
+                        database:
+                          type: string
+  /create-dashboard:
+    post:
+      summary: Create a new Dashboard
+      responses:
+        '200':
+          description: Created dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dashboard_id:
+                    type: integer
+                  title:
+                    type: string
+                  widgets:
+                    type: array
+                    items:
+                      type: object
+  /update-dashboard:
+    post:
+      summary: Update the Dashboard properties
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+                title:
+                  type: string
+              required:
+                - dashboard_id
+                - title
+      responses:
+        '200':
+          description: Updated dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dashboard_id:
+                    type: integer
+                  title:
+                    type: string
+                  widgets:
+                    type: array
+                    items:
+                      type: object
+  /test-data-source-connection:
+    post:
+      summary: Test the data source connection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataSource:
+                  type: object
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                    username:
+                      type: string
+                    password:
+                      type: string
+                    database:
+                      type: string
+              required:
+                - dataSource
+      responses:
+        '200':
+          description: Test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /set-data-source:
+    post:
+      summary: Set the data source connection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+                dataSource:
+                  type: object
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                    username:
+                      type: string
+                    password:
+                      type: string
+                    database:
+                      type: string
+              required:
+                - dashboard_id
+                - dataSource
+      responses:
+        '200':
+          description: Dashboard response
+          content:
+            application/json:
+              schema:
+                type: object
+  /add-widget:
+    post:
+      summary: Add a new widget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+                widget:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    title:
+                      type: string
+                    table:
+                      type: string
+                    x:
+                      type: string
+              required:
+                - dashboard_id
+                - widget
+      responses:
+        '200':
+          description: Dashboard response
+          content:
+            application/json:
+              schema:
+                type: object
+  /delete-widget:
+    post:
+      summary: Delete the widget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+                widget_id:
+                  type: integer
+              required:
+                - dashboard_id
+                - widget_id
+      responses:
+        '200':
+          description: Dashboard response
+          content:
+            application/json:
+              schema:
+                type: object
+  /fetch-widget-data:
+    post:
+      summary: Fetch data of the widget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+                widget_id:
+                  type: integer
+              required:
+                - dashboard_id
+                - widget_id
+      responses:
+        '200':
+          description: Widget data
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      sections:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            title:
+                              type: string
+                            percentage:
+                              type: number
+                  - type: object
+                    properties:
+                      bins:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            range:
+                              type: array
+                              items:
+                                type: number
+                            value:
+                              type: integer

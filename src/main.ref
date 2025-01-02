@@ -1,0 +1,87 @@
+*$FROM Socket
+$EXTERN
+  Socket-Open,
+  Socket-Close,
+  Socket-InitAddress,
+  Socket-DeinitAddress,
+  Socket-Bind,
+  Socket-Listen,
+  Socket-Accept,
+  Socket-Write,
+  Socket-Read;
+
+
+AF_INET { = 2 }
+
+SOCK_STREAM { = 1 }
+
+INADDR_ANY { = 0 }
+
+
+$ENTRY Go {
+  =
+    <Socket-Open 69 <AF_INET> <SOCK_STREAM> 0>
+    <Socket-InitAddress 42 <AF_INET> <INADDR_ANY> 6969>
+      <Socket-Bind 69 42>
+      <Socket-Listen 69 5>
+      <Prout 'HTTP server is running on http://localhost:6969'>
+      <AcceptLoop 69 42 HandleRequest (0)>
+    <Socket-DeinitAddress 42>
+    <Socket-Close 69>
+}
+
+
+AcceptLoop {
+  s.SocketNo s.AddressNo s.Handler t.Ctx
+    , <HandleRequest <Socket-Accept s.SocketNo s.AddressNo> t.Ctx> : {
+      t.NewCtx = <AcceptLoop s.SocketNo s.AddressNo s.Handler t.NewCtx>
+    }
+}
+
+
+HandleRequest {
+  s.ClientSocketNo t.Ctx
+    , <Socket-Read s.ClientSocketNo> : {
+      e.Method ' ' e.URI ' ' e.HttpVersion '\r\n'
+      e.Headers '\r\n'
+      '\r\n'
+      e.Body
+        , <Route (e.Method) (e.URI) (e.Body) t.Ctx> : {
+          e.Response t.NewCtx =
+            <Socket-Write s.ClientSocketNo e.Response>
+            <Socket-Close s.ClientSocketNo>
+            t.NewCtx
+        }
+    }
+}
+
+
+Route {
+  ('GET') ('/') (e.Body) (s.Counter) =
+    'HTTP/1.1 200 OK\r\n'
+    'Content-Type: text/html\r\n'
+    'Connection: close\r\n'
+    '\r\n'
+    '<form action="" method="post">'
+    '  <button name="inc" value="inc">' s.Counter '</button>'
+    '</form>'
+    (s.Counter);
+
+  ('POST') ('/') (e.Body) (s.Counter) =
+    'HTTP/1.1 200 OK\r\n'
+    'Content-Type: text/html\r\n'
+    'Connection: close\r\n'
+    '\r\n'
+    '<form action="" method="post">'
+    '  <button name="inc" value="inc">' <Add s.Counter 1> '</button>'
+    '</form>'
+    (<Add s.Counter 1>);
+
+  (e.Method) (e.URI) (e.Body) t.Ctx =
+    'HTTP/1.1 404 Not Found\r\n'
+    'Content-Type: text/html\r\n'
+    'Connection: close\r\n'
+    '\r\n'
+    'Not Found :('
+    t.Ctx;
+}
