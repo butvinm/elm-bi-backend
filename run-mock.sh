@@ -26,4 +26,4 @@ else
 fi
 
 # Run the FastAPI server
-uvicorn mock:app --reload
+uvicorn mock.main:app --port 6969 --reload
