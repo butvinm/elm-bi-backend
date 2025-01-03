@@ -1,74 +1,55 @@
 openapi: 3.0.0
 info:
-  title: Dashboard API
-  version: 1.0.0
-  description: API for managing dashboards and widgets.
+  title: Elm-BI API
+  version: 1.0.1
+  description: API for a simplified business intelligence (BI) system.
 paths:
   /get-dashboards:
     post:
-      summary: Get a list of the created dashboards
+      summary: Retrieve a list of all created dashboards.
       responses:
-        '200':
-          description: List of dashboards
+        "200":
+          description: A list of available dashboards.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    dashboard_id:
-                      type: integer
-                    title:
-                      type: string
-                    widgets:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          widget_id:
-                            type: integer
-                          title:
-                            type: string
-                          table:
-                            type: string
-                          x:
-                            type: string
-                    dataSource:
-                      type: object
-                      properties:
-                        host:
-                          type: string
-                        port:
-                          type: integer
-                        username:
-                          type: string
-                        password:
-                          type: string
-                        database:
-                          type: string
-  /create-dashboard:
+                  $ref: "#/components/schemas/Dashboard"
+  /get-dashboard:
     post:
-      summary: Create a new Dashboard
+      summary: Retrieve details of a specific dashboard by its ID, with optional data recalculation for widgets.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+              required:
+                - dashboard_id
       responses:
-        '200':
-          description: Created dashboard
+        "200":
+          description: Details of the requested dashboard.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  dashboard_id:
-                    type: integer
-                  title:
-                    type: string
-                  widgets:
-                    type: array
-                    items:
-                      type: object
+                $ref: "#/components/schemas/Dashboard"
+  /create-dashboard:
+    post:
+      summary: Create a new dashboard and return its details.
+      responses:
+        "200":
+          description: The newly created dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
   /update-dashboard:
     post:
-      summary: Update the Dashboard properties
+      summary: Update the properties of an existing dashboard.
       requestBody:
         required: true
         content:
@@ -84,49 +65,26 @@ paths:
                 - dashboard_id
                 - title
       responses:
-        '200':
-          description: Updated dashboard
+        "200":
+          description: Details of the updated dashboard.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  dashboard_id:
-                    type: integer
-                  title:
-                    type: string
-                  widgets:
-                    type: array
-                    items:
-                      type: object
+                $ref: "#/components/schemas/Dashboard"
+        "404":
+          description: The specified dashboard was not found.
   /test-data-source-connection:
     post:
-      summary: Test the data source connection
+      summary: Test the connection to a data source.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                dataSource:
-                  type: object
-                  properties:
-                    host:
-                      type: string
-                    port:
-                      type: integer
-                    username:
-                      type: string
-                    password:
-                      type: string
-                    database:
-                      type: string
-              required:
-                - dataSource
+              $ref: "#/components/schemas/DataSource"
       responses:
-        '200':
-          description: Test result
+        "200":
+          description: Result of the connection test. If successful, the error field will be null; otherwise, it will contain an error message.
           content:
             application/json:
               schema:
@@ -136,7 +94,7 @@ paths:
                     type: string
   /set-data-source:
     post:
-      summary: Set the data source connection
+      summary: Configure the data source connection for a specific dashboard.
       requestBody:
         required: true
         content:
@@ -147,31 +105,73 @@ paths:
                 dashboard_id:
                   type: integer
                 dataSource:
-                  type: object
-                  properties:
-                    host:
-                      type: string
-                    port:
-                      type: integer
-                    username:
-                      type: string
-                    password:
-                      type: string
-                    database:
-                      type: string
+                  $ref: "#/components/schemas/DataSource"
               required:
                 - dashboard_id
                 - dataSource
       responses:
-        '200':
-          description: Dashboard response
+        "200":
+          description: Details of the dashboard with the updated data source configuration.
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/Dashboard"
+        "404":
+          description: The specified dashboard was not found.
+  /get-data-source-tables:
+    post:
+      summary: Retrieve the list of tables and their columns from the data source linked to a dashboard.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+                dataSource:
+                  $ref: "#/components/schemas/DataSource"
+              required:
+                - dashboard_id
+      responses:
+        "200":
+          description: List of tables and their columns related to the dashboard's data source.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: Full table name, including schema, e.g., "HumanResources.Employee".
+                      type: string
+                    columns:
+                      description: List of columns in the table, including their names and data types.
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            description: Name of the column.
+                            type: string
+                          dataType:
+                            description: Data type of the column.
+                            type: string
+                        required:
+                          - name
+                          - dataType
+                  required:
+                    - name
+                    - columns
+        "400":
+          description: The specified dashboard does not have a data source.
+        "404":
+          description: The specified dashboard was not found.
   /add-widget:
     post:
-      summary: Add a new widget
+      summary: Add a new widget to a dashboard.
       requestBody:
         required: true
         content:
@@ -182,29 +182,22 @@ paths:
                 dashboard_id:
                   type: integer
                 widget:
-                  type: object
-                  properties:
-                    type:
-                      type: string
-                    title:
-                      type: string
-                    table:
-                      type: string
-                    x:
-                      type: string
+                  $ref: "#/components/schemas/Widget"
               required:
                 - dashboard_id
                 - widget
       responses:
-        '200':
-          description: Dashboard response
+        "200":
+          description: Details of the dashboard with the newly added widget.
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/Dashboard"
+        "404":
+          description: The specified dashboard was not found.
   /delete-widget:
     post:
-      summary: Delete the widget
+      summary: Remove a widget from a dashboard.
       requestBody:
         required: true
         content:
@@ -215,62 +208,147 @@ paths:
                 dashboard_id:
                   type: integer
                 widget_id:
+                  description: Widget index withing the list of the dashboard widgets
                   type: integer
               required:
                 - dashboard_id
                 - widget_id
       responses:
-        '200':
-          description: Dashboard response
+        "200":
+          description: Details of the dashboard with the updated list of widgets.
           content:
             application/json:
               schema:
+                $ref: "#/components/schemas/Dashboard"
+        "404":
+          description: The specified widget or dashboard was not found.
+components:
+  schemas:
+    Dashboard:
+      type: object
+      properties:
+        dashboard_id:
+          type: integer
+          description: Unique identifier for the dashboard.
+        title:
+          type: string
+          description: User-defined title of the dashboard.
+        widgets:
+          type: array
+          description: List of widgets included in the dashboard.
+          items:
+            $ref: "#/components/schemas/Widget"
+        dataSource:
+          $ref: "#/components/schemas/DataSource"
+          description: Configuration of the data source associated with the dashboard.
+      required:
+        - dashboard_id
+        - widgets
+    BaseWidget:
+      type: object
+      properties:
+        widget_type:
+          description: Specifies the type of the widget.
+          type: string
+        title:
+          description: User-defined title of the widget.
+          type: string
+      required:
+        - widget_type
+        - title
+      discriminator:
+        propertyName: widget_type
+    PieChart:
+      allOf:
+        - $ref: "#/components/schemas/BaseWidget"
+        - type: object
+          properties:
+            table:
+              description: Name of the table in the data source used for the pie chart.
+              type: string
+            x_column:
+              description: Name of the column used as the category for the pie chart.
+              type: string
+            sections:
+              description: Computed sections of the pie chart based on the data.
+              type: array
+              items:
                 type: object
-  /fetch-widget-data:
-    post:
-      summary: Fetch data of the widget
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dashboard_id:
-                  type: integer
-                widget_id:
-                  type: integer
+                properties:
+                  title:
+                    description: Label for a pie chart category.
+                    type: string
+                  percentage:
+                    description: Percentage of the category relative to the total data.
+                    type: number
+                required:
+                  - title
+                  - percentage
+          required:
+            - table
+            - x_column
+    Histogram:
+      allOf:
+        - $ref: "#/components/schemas/BaseWidget"
+        - type: object
+          properties:
+            table:
+              description: Name of the table in the data source used for the histogram.
+              type: string
+            x_column:
+              description: Name of the column used as the X-axis for the histogram.
+              type: string
+            bins:
+              description: Distribution bins for the histogram.
+              type: array
+              items:
+                type: object
+                properties:
+                  range:
+                    description: Range of values for this bin.
+                    type: object
+                    properties:
+                      left:
+                        description: Lower boundary of the bin. If null, right boundary is -inf.
+                        type: number
+                      right:
+                        description: Upper boundary of the bin. If null, right boundary is +inf.
+                        type: number
+                  value:
+                    description: Count of items in this bin.
+                    type: number
               required:
-                - dashboard_id
-                - widget_id
-      responses:
-        '200':
-          description: Widget data
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: object
-                    properties:
-                      sections:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            title:
-                              type: string
-                            percentage:
-                              type: number
-                  - type: object
-                    properties:
-                      bins:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            range:
-                              type: array
-                              items:
-                                type: number
-                            value:
-                              type: integer
+                - range
+                - value
+          required:
+            - table
+            - x_column
+    Widget:
+      oneOf:
+        - $ref: "#/components/schemas/PieChart"
+        - $ref: "#/components/schemas/Histogram"
+      discriminator:
+        propertyName: widget_type
+    DataSource:
+      type: object
+      properties:
+        host:
+          description: Hostname or IP address of the data source server.
+          type: string
+        port:
+          description: Port number for connecting to the data source server.
+          type: integer
+        username:
+          description: Username for data source authentication.
+          type: string
+        password:
+          description: Password for data source authentication.
+          type: string
+        database:
+          description: Name of the database to connect to.
+          type: string
+      required:
+        - host
+        - port
+        - username
+        - database
