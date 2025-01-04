@@ -73,25 +73,10 @@ paths:
                 $ref: "#/components/schemas/Dashboard"
         "404":
           description: The specified dashboard was not found.
-  /test-data-source-connection:
-    post:
-      summary: Test the connection to a data source.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DataSource"
-      responses:
-        "200":
-          description: Result of the connection test. If successful, the error field will be null; otherwise, it will contain an error message.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+                $ref: "#/components/schemas/Error"
   /set-data-source:
     post:
       summary: Configure the data source connection for a specific dashboard.
@@ -116,8 +101,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dashboard"
+        "400":
+          description: Connection to the data source failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "404":
           description: The specified dashboard was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /get-data-source-tables:
     post:
       summary: Retrieve the list of tables and their columns from the data source linked to a dashboard.
@@ -130,8 +125,6 @@ paths:
               properties:
                 dashboard_id:
                   type: integer
-                dataSource:
-                  $ref: "#/components/schemas/DataSource"
               required:
                 - dashboard_id
       responses:
@@ -142,33 +135,19 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    name:
-                      description: Full table name, including schema, e.g., "HumanResources.Employee".
-                      type: string
-                    columns:
-                      description: List of columns in the table, including their names and data types.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          name:
-                            description: Name of the column.
-                            type: string
-                          dataType:
-                            description: Data type of the column.
-                            type: string
-                        required:
-                          - name
-                          - dataType
-                  required:
-                    - name
-                    - columns
+                  $ref: "#/components/schemas/DataSourceTable"
         "400":
           description: The specified dashboard does not have a data source.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         "404":
           description: The specified dashboard was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /add-widget:
     post:
       summary: Add a new widget to a dashboard.
@@ -195,6 +174,10 @@ paths:
                 $ref: "#/components/schemas/Dashboard"
         "404":
           description: The specified dashboard was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /delete-widget:
     post:
       summary: Remove a widget from a dashboard.
@@ -222,6 +205,10 @@ paths:
                 $ref: "#/components/schemas/Dashboard"
         "404":
           description: The specified widget or dashboard was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   schemas:
     Dashboard:
@@ -352,3 +339,32 @@ components:
         - port
         - username
         - database
+    DataSourceTable:
+      type: object
+      properties:
+        name:
+          description: Full table name, including schema, e.g., "HumanResources.Employee".
+          type: string
+        columns:
+          description: List of columns in the table, including their names and data types.
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: Name of the column.
+                type: string
+              dataType:
+                description: Data type of the column.
+                type: string
+            required:
+              - name
+              - dataType
+      required:
+        - name
+        - columns
+    Error:
+     type: object
+     properties:
+       detail:
+        type: string
