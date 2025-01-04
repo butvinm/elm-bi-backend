@@ -37,33 +37,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dashboard"
-  /create-dashboard:
+  /create-or-update-dashboard:
     post:
-      summary: Create a new dashboard and return its details.
-      responses:
-        "200":
-          description: The newly created dashboard.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Dashboard"
-  /update-dashboard:
-    post:
-      summary: Update the properties of an existing dashboard.
+      summary: Updates the specified dashboard if dashboard_id exists; otherwise, creates a new one. Use dashboard_id=-1 to explicitly create a new dashboard.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                dashboard_id:
-                  type: integer
-                title:
-                  type: string
-              required:
-                - dashboard_id
-                - title
+              $ref: "#/components/schemas/Dashboard"
       responses:
         "200":
           description: Details of the updated dashboard.
@@ -71,44 +53,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dashboard"
-        "404":
-          description: The specified dashboard was not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /set-data-source:
-    post:
-      summary: Configure the data source connection for a specific dashboard.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dashboard_id:
-                  type: integer
-                dataSource:
-                  $ref: "#/components/schemas/DataSource"
-              required:
-                - dashboard_id
-                - dataSource
-      responses:
-        "200":
-          description: Details of the dashboard with the updated data source configuration.
+        "201":
+          description: Details of the newly created dashboard.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dashboard"
         "400":
           description: Connection to the data source failed.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: The specified dashboard was not found.
           content:
             application/json:
               schema:
@@ -364,7 +316,7 @@ components:
         - name
         - columns
     Error:
-     type: object
-     properties:
-       detail:
-        type: string
+      type: object
+      properties:
+        detail:
+          type: string
