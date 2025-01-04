@@ -12,19 +12,17 @@ from .models import (
     Column,
     Dashboard,
     DataSource,
+    DataSourceTable,
     DeleteWidgetPostRequest,
     GetDashboardPostRequest,
     GetDashboardsPostResponse,
     GetDataSourceTablesPostRequest,
     GetDataSourceTablesPostResponse,
-    GetDataSourceTablesPostResponseItem,
     Histogram,
     PieChart,
     Range,
     Section,
     SetDataSourcePostRequest,
-    TestDataSourceConnectionPostResponse,
-    UpdateDashboardPostRequest,
     Widget,
 )
 
@@ -137,16 +135,19 @@ def post_get_data_source_tables(
     """
     Retrieve the list of tables and their columns from the data source linked to a dashboard.
     """
+    if body.dashboard_id not in dashboards:
+        raise HTTPException(status_code=404, detail="Dashboard not found.")
+
     return GetDataSourceTablesPostResponse(
         [
-            GetDataSourceTablesPostResponseItem(
+            DataSourceTable(
                 name="HumanResources.Employees",
                 columns=[
                     Column(name="Age", dataType="int"),
                     Column(name="Gender", dataType="string"),
                 ],
             ),
-            GetDataSourceTablesPostResponseItem(
+            DataSourceTable(
                 name="HumanResources.Candidates",
                 columns=[
                     Column(name="Age", dataType="int"),
@@ -162,18 +163,14 @@ def post_set_data_source(body: SetDataSourcePostRequest) -> Dashboard:
     """
     Configure the data source connection for a specific dashboard.
     """
+    if body.dashboard_id == 69:
+        raise HTTPException(status_code=400, detail="Password is incorrect")
+
+    if body.dashboard_id == 42:
+        raise HTTPException(status_code=400, detail="Not such database")
+
     if body.dashboard_id not in dashboards:
         raise HTTPException(status_code=404, detail="Dashboard not found.")
 
     dashboards[body.dashboard_id].dataSource = body.dataSource
     return dashboards[body.dashboard_id]
-
-
-@app.post("/test-data-source-connection", response_model=TestDataSourceConnectionPostResponse)
-def post_test_data_source_connection(
-    body: DataSource,
-) -> TestDataSourceConnectionPostResponse:
-    """
-    Test the connection to a data source.
-    """
-    return TestDataSourceConnectionPostResponse(error="Wrong password")
