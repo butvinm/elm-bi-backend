@@ -37,9 +37,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dashboard"
-  /create-or-update-dashboard:
+  /create-dashboard:
     post:
-      summary: Updates the specified dashboard if dashboard_id exists; otherwise, creates a new one. Use dashboard_id=-1 to explicitly create a new dashboard.
+      summary: Create a new dashboard. Client may specify any dashboard_id, it will be generated automatically and can be retrieved from response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Dashboard"
+      responses:
+        "201":
+          description: Details of the newly created dashboard.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "400":
+          description: Connection to the data source failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /update-dashboard:
+    post:
+      summary: Update the dashboard.
       requestBody:
         required: true
         content:
@@ -53,14 +75,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dashboard"
-        "201":
-          description: Details of the newly created dashboard.
+        "400":
+          description: Connection to the data source failed.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Dashboard"
-        "400":
-          description: Connection to the data source failed.
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: The specified dashboard was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /delete-dashboard:
+    post:
+      summary: Delete the dashboard.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dashboard_id:
+                  type: integer
+              required:
+                - dashboard_id
+      responses:
+        "200":
+          description: The updated list of all dashboards without.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dashboard"
+        "404":
+          description: The specified dashboard was not found.
           content:
             application/json:
               schema:
