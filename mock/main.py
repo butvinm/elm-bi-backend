@@ -14,6 +14,7 @@ from .models import (
     Bin,
     Column,
     Dashboard,
+    DataSource,
     DataSourceTable,
     DeleteWidgetPostRequest,
     Error,
@@ -70,7 +71,13 @@ dashboards = {
                 ),
             ),
         ],
-        dataSource=None,
+        dataSource=DataSource(
+            host="localhost",
+            port=5432,
+            username="postgres",
+            password="postgres",
+            database="postgres",
+        ),
     )
 }
 
