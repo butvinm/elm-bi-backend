@@ -182,7 +182,9 @@ components:
           description: Configuration of the data source associated with the dashboard.
       required:
         - dashboard_id
+        - title
         - widgets
+        - dataSource
     BaseWidget:
       type: object
       properties:
