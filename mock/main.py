@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from random import random
+from random import randint, random
 from typing import Optional, Union
 
 from fastapi import FastAPI, HTTPException, Response
@@ -56,6 +56,7 @@ dashboards = {
             Widget(
                 PieChart(
                     widget_type="PieChart",
+                    widget_id=0,
                     title="Some Pie Chart",
                     table="HumanResources.Employees",
                     data_column="Gender",
@@ -64,6 +65,7 @@ dashboards = {
             Widget(
                 Histogram(
                     widget_type="Histogram",
+                    widget_id=1,
                     title="Some Histogram",
                     table="HumanResources.Employees",
                     data_column="Age",
@@ -112,8 +114,7 @@ def post_create_dashboard(body: Dashboard, response: Response) -> Optional[Union
     if body.title == "test data source error":
         raise HTTPException(status_code=400, detail="Bad data source credentials.")
 
-    dashboard_id = max(dashboards.keys(), default=0) + 1
-    body.dashboard_id = dashboard_id
+    body.dashboard_id = randint(0, 666)
     dashboards[body.dashboard_id] = body
 
     response.status_code = 201
@@ -161,6 +162,7 @@ def post_add_widget(body: AddWidgetPostRequest) -> Union[Dashboard, Error]:
     if body.dashboard_id not in dashboards:
         raise HTTPException(status_code=404, detail="Dashboard not found.")
 
+    body.widget.root.widget_id = randint(0, 666)
     dashboards[body.dashboard_id].widgets.append(body.widget)
     return dashboards[body.dashboard_id]
 
@@ -173,11 +175,12 @@ def post_delete_widget(body: DeleteWidgetPostRequest) -> Union[Dashboard, Error]
     if body.dashboard_id not in dashboards:
         raise HTTPException(status_code=404, detail="Dashboard not found.")
 
-    if body.widget_id < 0 or body.widget_id >= len(dashboards[body.dashboard_id].widgets):
-        raise HTTPException(status_code=404, detail="Widget not found.")
+    for i, widget in enumerate(dashboards[body.dashboard_id].widgets):
+        if widget.root.widget_id == body.widget_id:
+            dashboards[body.dashboard_id].widgets.pop(i)
+            return dashboards[body.dashboard_id]
 
-    dashboards[body.dashboard_id].widgets.pop(body.widget_id)
-    return dashboards[body.dashboard_id]
+    raise HTTPException(status_code=404, detail="Widget not found.")
 
 
 @app.post(
@@ -194,18 +197,18 @@ def post_fetch_widget_data(
     if body.dashboard_id not in dashboards:
         raise HTTPException(status_code=404, detail="Dashboard not found.")
 
-    if body.widget_id < 0 or body.widget_id >= len(dashboards[body.dashboard_id].widgets):
-        raise HTTPException(status_code=404, detail="Widget not found.")
+    for widget in dashboards[body.dashboard_id].widgets:
+        if widget.root.widget_id == body.widget_id:
+            if widget.root.widget_type == "PieChart":
+                return WidgetData(
+                    PieChartData(data=[Datum(title="Women", count=1337), Datum(title="Man", count=999), Datum(title="Other", count=666)]),
+                )
+            else:
+                return WidgetData(
+                    HistogramData(data=[random() * 100 - 50 for _ in range(1000)]),
+                )
 
-    widget = dashboards[body.dashboard_id].widgets[body.widget_id]
-    if widget.root.widget_type == "PieChart":
-        return WidgetData(
-            PieChartData(data=[Datum(title="Women", count=1337), Datum(title="Man", count=999), Datum(title="Other", count=666)]),
-        )
-    else:
-        return WidgetData(
-            HistogramData(data=[random() * 100 - 50 for _ in range(1000)]),
-        )
+    raise HTTPException(status_code=404, detail="Widget not found.")
 
 
 @app.post(
