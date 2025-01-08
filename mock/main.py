@@ -85,7 +85,7 @@ dashboards = {
 
 @app.post("/get-dashboards", response_model=GetDashboardsPostResponse)
 def post_get_dashboards() -> GetDashboardsPostResponse:
-    """
+    """\
     Retrieve a list of all created dashboards.
     """
     return GetDashboardsPostResponse(list(dashboards.values()))
@@ -114,7 +114,7 @@ def post_create_dashboard(body: Dashboard, response: Response) -> Optional[Union
     if body.title == "test data source error":
         raise HTTPException(status_code=400, detail="Bad data source credentials.")
 
-    dashboard_id = max(dashboards.keys()) + 1
+    dashboard_id = max(dashboards.keys(), default=0) + 1
     body.dashboard_id = dashboard_id
     dashboards[body.dashboard_id] = body
 
