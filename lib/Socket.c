@@ -111,7 +111,6 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_InitAddress, "Socket-InitAddress") {
   address->sin_port = htons(sPort->info.number);
   s_addresses[address_no] = address;
 
-  printf("address.sin_family=%d, address.sin_addr.s_addr=%d, address.sin_port=%d\n", address->sin_family, address->sin_addr.s_addr, address->sin_port);
   r05_splice_to_freelist(arg_begin, arg_end);
 }
 
@@ -168,7 +167,6 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Bind, "Socket-Bind") {
 
   socket_no = sSocketNo->info.number % SOCKET_LIMIT;
   address_no = sAddressNo->info.number % SOCKET_LIMIT;
-  printf("socket_no=%d addrress_no=%d\n", socket_no, address_no);
 
   int socket_fd = s_sockets[socket_no];
   if (socket_fd <= 0) {
@@ -180,8 +178,6 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Bind, "Socket-Bind") {
     r05_builtin_error("Address is not initialized");
   }
 
-  printf("socket_fd=%d\n", socket_fd);
-  printf("address.sin_family=%d, address.sin_addr.s_addr=%d, address.sin_port=%d\n", address->sin_family, address->sin_addr.s_addr, address->sin_port);
   if (bind(socket_fd, (struct sockaddr*)address, sizeof(*address)) < 0) {
     r05_builtin_error_errno("Failed to bind socket");
   }
@@ -371,7 +367,6 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Read, "Socket-Read") {
   if (buffer_len >= MAX_BODY_SIZE) {
       r05_builtin_error("Buffer overflow while reading from socket");
   }
-  printf("end of the bugger: %c %c", buffer[buffer_len-2], buffer[buffer_len-1]);
   buffer[buffer_len] = '\0';
 
   r05_reset_allocator();
