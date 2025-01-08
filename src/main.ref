@@ -10,6 +10,12 @@ $EXTERN
   Socket-Write,
   Socket-Read;
 
+*$FROM Json
+$EXTERN Json-Stringify;
+
+*$FROM HttpUtils
+$EXTERN DecodeHttpRequest, EncodeHttpResponse;
+
 
 AF_INET { = 2 }
 
@@ -19,13 +25,12 @@ INADDR_ANY { = 0 }
 
 
 $ENTRY Go {
-  =
-    <Socket-Open 69 <AF_INET> <SOCK_STREAM> 0>
+  = <Socket-Open 69 <AF_INET> <SOCK_STREAM> 0>
     <Socket-InitAddress 42 <AF_INET> <INADDR_ANY> 6969>
       <Socket-Bind 69 42>
       <Socket-Listen 69 5>
-      <Prout 'HTTP server is running on http://localhost:6969'>
-      <AcceptLoop 69 42 HandleRequest (0)>
+      <Prout 'HTTP server is running at http://localhost:6969'>
+      <AcceptLoop 69 42 HandleRequest ()>
     <Socket-DeinitAddress 42>
     <Socket-Close 69>
 }
@@ -33,7 +38,8 @@ $ENTRY Go {
 
 AcceptLoop {
   s.SocketNo s.AddressNo s.Handler t.Ctx
-    , <HandleRequest <Socket-Accept s.SocketNo s.AddressNo> t.Ctx> : {
+    , <HandleRequest <Socket-Accept s.SocketNo s.AddressNo> t.Ctx>
+    : {
       t.NewCtx = <AcceptLoop s.SocketNo s.AddressNo s.Handler t.NewCtx>
     }
 }
@@ -41,47 +47,103 @@ AcceptLoop {
 
 HandleRequest {
   s.ClientSocketNo t.Ctx
-    , <Socket-Read s.ClientSocketNo> : {
-      e.Method ' ' e.URI ' ' e.HttpVersion '\r\n'
-      e.Headers '\r\n'
-      '\r\n'
-      e.Body
-        , <Route (e.Method) (e.URI) (e.Body) t.Ctx> : {
-          e.Response t.NewCtx =
-            <Socket-Write s.ClientSocketNo e.Response>
+    , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>>
+    : t.Method t.URI t.HttpVersion t.Headers e.Body
+    , <Route t.Ctx t.Method t.URI e.Body>
+    : {
+        t.NewCtx e.Response
+          = <Socket-Write s.ClientSocketNo e.Response>
             <Socket-Close s.ClientSocketNo>
             t.NewCtx
-        }
     }
 }
 
 
+CreateResponse {
+  s.Code t.Json
+    = <EncodeHttpResponse
+      s.Code
+      (
+        (('Content-Type') 'application/json')
+        (('Connection') 'close')
+      )
+      <Json-Stringify t.Json>
+    >
+}
+
+
 Route {
-  ('GET') ('/') (e.Body) (s.Counter) =
-    'HTTP/1.1 200 OK\r\n'
-    'Content-Type: text/html\r\n'
-    'Connection: close\r\n'
-    '\r\n'
-    '<form action="" method="post">'
-    '  <button name="inc" value="inc">' s.Counter '</button>'
-    '</form>'
-    (s.Counter);
+  t.Ctx ('POST') ('/get-dashboards') /* empty */
+    = t.Ctx
+      <CreateResponse 200
+        (Array
+          (Object
+            ((String 'dashboard_id') (Number (0)()()))
+            ((String 'title') (String 'Sample Dashboard'))
+            (
+              (String 'widgets')
+              (Array
+                (Object
+                  ((String 'widget_type') (String 'PieChart'))
+                  ((String 'title') (String 'Some Pie Chart'))
+                  ((String 'table') (String 'HumanResources.Employees'))
+                  ((String 'x_column') (String 'Gender'))
+                  (
+                    (String 'sections')
+                    (Array
+                      (Object
+                        ((String 'title') (String 'Man'))
+                        ((String 'percentage') (Number (89)()()))
+                      )
+                      (Object
+                        ((String 'title') (String 'Woman'))
+                        ((String 'percentage') (Number (10)()()))
+                      )
+                      (Object
+                        ((String 'title') (String 'Other'))
+                        ((String 'percentage') (Number (1)()()))
+                      )
+                    )
+                  )
+                )
+                (Object
+                  ((String 'widget_type') (String 'Histogram'))
+                  ((String 'title') (String 'Some Histogram'))
+                  ((String 'table') (String 'HumanResources.Employees'))
+                  ((String 'x_column') (String 'Age'))
+                  (
+                    (String 'bins')
+                    (Array
+                      (Object
+                        ((String 'left') (Number (23)()()))
+                        ((String 'right') (Number (30)()()))
+                        ((String 'value') (Number (80)()()))
+                      )
+                      (Object
+                        ((String 'left') (Number (31)()()))
+                        ((String 'right') Null)
+                        ((String 'value') (Number (20)()()))
+                      )
+                    )
+                  )
+                )
+              )
+            )
+            (
+              (String 'dataSource')
+              (Object
+                ((String 'host') (String 'localhost'))
+                ((String 'port') (Number (5432)()()))
+                ((String 'username') (String 'postgres'))
+                ((String 'password') (String 'postgres'))
+                ((String 'database') (String 'postgres'))
+              )
+            )
+          )
+        )
+      >;
 
-  ('POST') ('/') (e.Body) (s.Counter) =
-    'HTTP/1.1 200 OK\r\n'
-    'Content-Type: text/html\r\n'
-    'Connection: close\r\n'
-    '\r\n'
-    '<form action="" method="post">'
-    '  <button name="inc" value="inc">' <Add s.Counter 1> '</button>'
-    '</form>'
-    (<Add s.Counter 1>);
-
-  (e.Method) (e.URI) (e.Body) t.Ctx =
-    'HTTP/1.1 404 Not Found\r\n'
-    'Content-Type: text/html\r\n'
-    'Connection: close\r\n'
-    '\r\n'
-    'Not Found :('
-    t.Ctx;
+  t.Ctx (e.Method) (e.URI) e.Body
+    = t.Ctx
+      <CreateResponse 404 (String 'Not Found :(')>;
 }
