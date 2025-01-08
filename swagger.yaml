@@ -212,6 +212,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /fetch-widget-data:
+    post:
+      summary: Retrieve data required to render a widget.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dashboard_id
+                - widget_id
+              properties:
+                dashboard_id:
+                  type: integer
+                widget_id:
+                  description: Widget index withing the list of the dashboard widgets
+                  type: integer
+      responses:
+        "200":
+          description: Data specific to the widget type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WidgetData"
+        "400":
+          description: Failed to execute the query on the data source.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: The specified widget or dashboard was not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 components:
   schemas:
     Dashboard:
@@ -254,73 +292,66 @@ components:
       allOf:
         - $ref: "#/components/schemas/BaseWidget"
         - type: object
+          required:
+            - table
+            - data_column
           properties:
             table:
               description: Name of the table in the data source used for the pie chart.
               type: string
-            x_column:
-              description: Name of the column used as the category for the pie chart.
+            data_column:
+              description: Name of the column used with categorical values for the pie chart.
               type: string
-            sections:
-              description: Computed sections of the pie chart based on the data.
-              type: array
-              items:
-                type: object
-                properties:
-                  title:
-                    description: Label for a pie chart category.
-                    type: string
-                  percentage:
-                    description: Percentage of the category relative to the total data.
-                    type: number
-                required:
-                  - title
-                  - percentage
-          required:
-            - table
-            - x_column
+    PieChartData:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - title
+              - count
+            properties:
+              title:
+                type: string
+              count:
+                type: number
     Histogram:
       allOf:
         - $ref: "#/components/schemas/BaseWidget"
         - type: object
+          required:
+            - table
+            - data_column
           properties:
             table:
               description: Name of the table in the data source used for the histogram.
               type: string
-            x_column:
-              description: Name of the column used as the X-axis for the histogram.
+            data_column:
+              description: Name of the column with values used to build a histogram.
               type: string
-            bins:
-              description: Distribution bins for the histogram.
-              type: array
-              items:
-                type: object
-                properties:
-                  range:
-                    description: Range of values for this bin.
-                    type: object
-                    properties:
-                      left:
-                        description: Lower boundary of the bin. If null, right boundary is -inf.
-                        type: number
-                      right:
-                        description: Upper boundary of the bin. If null, right boundary is +inf.
-                        type: number
-                  value:
-                    description: Count of items in this bin.
-                    type: number
-              required:
-                - range
-                - value
-          required:
-            - table
-            - x_column
+    HistogramData:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: number
     Widget:
       oneOf:
         - $ref: "#/components/schemas/PieChart"
         - $ref: "#/components/schemas/Histogram"
       discriminator:
         propertyName: widget_type
+    WidgetData:
+      oneOf:
+        - $ref: "#/components/schemas/PieChartData"
+        - $ref: "#/components/schemas/HistogramData"
     DataSource:
       type: object
       properties:
