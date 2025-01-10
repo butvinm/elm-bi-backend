@@ -7,6 +7,12 @@ paths:
   /get-dashboards:
     post:
       summary: Retrieve a list of all created dashboards.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         "200":
           description: A list of available dashboards.
@@ -15,7 +21,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Dashboard"
+                  $ref: "#/components/schemas/DashboardDigest"
   /get-dashboard:
     post:
       summary: Retrieve details of a specific dashboard by its ID, with optional data recalculation for widgets.
@@ -25,11 +31,11 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - dashboard_id
               properties:
                 dashboard_id:
                   type: integer
-              required:
-                - dashboard_id
       responses:
         "200":
           description: Details of the requested dashboard.
@@ -45,7 +51,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Dashboard"
+              $ref: "#/components/schemas/DashboardCreate"
       responses:
         "201":
           description: Details of the newly created dashboard.
@@ -67,7 +73,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Dashboard"
+              allOf:
+                - $ref: "#/components/schemas/DashboardCreate"
+                - type: object
+                  required:
+                    - dashboard_id
+                  properties:
+                    dashboard_id:
+                      type: integer
       responses:
         "200":
           description: Details of the updated dashboard.
@@ -76,7 +89,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Dashboard"
         "400":
-          description: Connection to the data source failed.
+          description: Failed to conntect to the data source or failed to recalculate the widgets data.
           content:
             application/json:
               schema:
@@ -96,11 +109,11 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - dashboard_id
               properties:
                 dashboard_id:
                   type: integer
-              required:
-                - dashboard_id
       responses:
         "200":
           description: The updated list of all dashboards without.
@@ -109,42 +122,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Dashboard"
-        "404":
-          description: The specified dashboard was not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /get-data-source-tables:
-    post:
-      summary: Retrieve the list of tables and their columns from the data source linked to a dashboard.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dashboard_id:
-                  type: integer
-              required:
-                - dashboard_id
-      responses:
-        "200":
-          description: List of tables and their columns related to the dashboard's data source.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/DataSourceTable"
-        "400":
-          description: The specified dashboard does not have a data source.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                  $ref: "#/components/schemas/DashboardDigest"
         "404":
           description: The specified dashboard was not found.
           content:
@@ -160,14 +138,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - dashboard_id
+                - widget
               properties:
                 dashboard_id:
                   type: integer
                 widget:
-                  $ref: "#/components/schemas/Widget"
-              required:
-                - dashboard_id
-                - widget
+                  $ref: "#/components/schemas/WidgetCreate"
       responses:
         "200":
           description: Details of the dashboard with the newly added widget.
@@ -190,14 +168,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - dashboard_id
+                - widget_id
               properties:
                 dashboard_id:
                   type: integer
                 widget_id:
                   type: integer
-              required:
-                - dashboard_id
-                - widget_id
       responses:
         "200":
           description: Details of the dashboard with the updated list of widgets.
@@ -211,47 +189,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /fetch-widget-data:
-    post:
-      summary: Retrieve data required to render a widget.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - dashboard_id
-                - widget_id
-              properties:
-                dashboard_id:
-                  type: integer
-                widget_id:
-                  type: integer
-      responses:
-        "200":
-          description: Data specific to the widget type
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WidgetData"
-        "400":
-          description: Failed to execute the query on the data source.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: The specified widget or dashboard was not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
+    DashboardDigest:
+      type: object
+      required:
+        - dashboard_id
+        - title
+      properties:
+        dashboard_id:
+          type: integer
+        title:
+          type: string
+    DashboardCreate:
+      type: object
+      required:
+        - title
+        - dataSource
+      properties:
+        title:
+          type: string
+          description: User-defined title of the dashboard.
+        dataSource:
+          $ref: "#/components/schemas/DataSourceCreate"
     Dashboard:
       type: object
+      required:
+        - dashboard_id
+        - title
+        - widgets
+        - dataSource
       properties:
         dashboard_id:
           type: integer
@@ -267,13 +235,26 @@ components:
         dataSource:
           $ref: "#/components/schemas/DataSource"
           description: Configuration of the data source associated with the dashboard.
+    BaseWidgetCreate:
+      type: object
       required:
-        - dashboard_id
+        - widget_type
         - title
-        - widgets
-        - dataSource
+      properties:
+        widget_type:
+          description: Specifies the type of the widget.
+          type: string
+        title:
+          description: User-defined title of the widget.
+          type: string
+      discriminator:
+        propertyName: widget_type
     BaseWidget:
       type: object
+      required:
+        - widget_type
+        - widget_id
+        - title
       properties:
         widget_type:
           description: Specifies the type of the widget.
@@ -284,14 +265,11 @@ components:
         title:
           description: User-defined title of the widget.
           type: string
-      required:
-        - widget_type
-        - title
       discriminator:
         propertyName: widget_type
-    PieChart:
+    PieChartCreate:
       allOf:
-        - $ref: "#/components/schemas/BaseWidget"
+        - $ref: "#/components/schemas/BaseWidgetCreate"
         - type: object
           required:
             - table
@@ -303,26 +281,38 @@ components:
             data_column:
               description: Name of the column used with categorical values for the pie chart.
               type: string
-    PieChartData:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          items:
-            type: object
-            required:
-              - title
-              - count
-            properties:
-              title:
-                type: string
-              count:
-                type: integer
-    Histogram:
+    PieChart:
       allOf:
         - $ref: "#/components/schemas/BaseWidget"
+        - type: object
+          required:
+            - table
+            - data_column
+            - data
+          properties:
+            table:
+              description: Name of the table in the data source used for the pie chart.
+              type: string
+            data_column:
+              description: Name of the column used with categorical values for the pie chart.
+              type: string
+            data:
+              $ref: "#/components/schemas/PieChartData"
+    PieChartData:
+      type: array
+      items:
+        type: object
+        required:
+          - title
+          - count
+        properties:
+          title:
+            type: string
+          count:
+            type: integer
+    HistogramCreate:
+      allOf:
+        - $ref: "#/components/schemas/BaseWidgetCreate"
         - type: object
           required:
             - table
@@ -334,25 +324,65 @@ components:
             data_column:
               description: Name of the column with values used to build a histogram.
               type: string
+    Histogram:
+      allOf:
+        - $ref: "#/components/schemas/BaseWidget"
+        - type: object
+          required:
+            - table
+            - data_column
+            - data
+          properties:
+            table:
+              description: Name of the table in the data source used for the histogram.
+              type: string
+            data_column:
+              description: Name of the column with values used to build a histogram.
+              type: string
+            data:
+              $ref: "#/components/schemas/HistogramData"
     HistogramData:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: array
-          items:
-            type: number
+      type: array
+      items:
+        type: number
+    WidgetCreate:
+      oneOf:
+        - $ref: "#/components/schemas/PieChartCreate"
+        - $ref: "#/components/schemas/HistogramCreate"
+      discriminator:
+        propertyName: widget_type
+        mapping:
+          PieChart: "#/components/schemas/PieChartCreate"
+          Histogram: "#/components/schemas/HistogramCreate"
     Widget:
       oneOf:
         - $ref: "#/components/schemas/PieChart"
         - $ref: "#/components/schemas/Histogram"
       discriminator:
         propertyName: widget_type
-    WidgetData:
-      oneOf:
-        - $ref: "#/components/schemas/PieChartData"
-        - $ref: "#/components/schemas/HistogramData"
+    DataSourceCreate:
+      type: object
+      required:
+        - host
+        - port
+        - username
+        - database
+      properties:
+        host:
+          description: Hostname or IP address of the data source server.
+          type: string
+        port:
+          description: Port number for connecting to the data source server.
+          type: integer
+        username:
+          description: Username for data source authentication.
+          type: string
+        password:
+          description: Password for data source authentication.
+          type: string
+        database:
+          description: Name of the database to connect to.
+          type: string
     DataSource:
       type: object
       properties:
@@ -371,13 +401,21 @@ components:
         database:
           description: Name of the database to connect to.
           type: string
+        tables:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSourceTable"
       required:
         - host
         - port
         - username
         - database
+        - tables
     DataSourceTable:
       type: object
+      required:
+        - name
+        - columns
       properties:
         name:
           description: Full table name, including schema, e.g., "HumanResources.Employee".
@@ -387,6 +425,9 @@ components:
           type: array
           items:
             type: object
+            required:
+              - name
+              - dataType
             properties:
               name:
                 description: Name of the column.
@@ -394,12 +435,6 @@ components:
               dataType:
                 description: Data type of the column.
                 type: string
-            required:
-              - name
-              - dataType
-      required:
-        - name
-        - columns
     Error:
       type: object
       properties:
