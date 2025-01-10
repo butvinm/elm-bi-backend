@@ -1,0 +1,19 @@
+$ENTRY GetDashboardDigest {
+  t.Dashboard
+    , <Dashboard-Id t.Dashboard> : t.Id
+    , <Dashboard-Title t.Dashboard> : t.Title
+    = (Object
+      ((String 'dashboard_id') t.Id)
+      ((String 'title') t.Title)
+    )
+}
+
+
+$ENTRY Dashboard-Id {
+  (Object e.B ((String 'dashboard_id') t.Id) e.E) = t.Id;
+}
+
+
+$ENTRY Dashboard-Title {
+  (Object e.B ((String 'title') t.Title) e.E) = t.Title;
+}

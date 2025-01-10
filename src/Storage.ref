@@ -1,0 +1,23 @@
+*$FROM LibraryEx
+$EXTERN LoadFile, SaveFile;
+
+*$FROM Json
+$EXTERN Json-Parse, Json-Stringify;
+
+*$FROM Utils
+$EXTERN UnBracket;
+
+
+$ENTRY LoadDashboards {
+  , <Json-Parse <UnBracket <LoadFile <GetEnv 'ELM_BI_STORAGE_FILE'>>>>
+  : {
+    Success (Array e.Dashboards) = (Array e.Dashboards);
+    Success e.Wtf = <Prout 'Storage contains unexpected data: ' e.Wtf> <Exit 1>;
+    Fails e.Error = <Prout 'Failed to parse storage file: ' e.Error> <Exit 1>;
+  }
+}
+
+
+$ENTRY DumpDashboards {
+  t.Dashboards = <SaveFile (<GetEnv 'ELM_BI_STORAGE_FILE'>) (<Json-Stringify t.Dashboards>)>
+}

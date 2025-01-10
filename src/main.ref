@@ -1,61 +1,116 @@
-*$FROM Socket
-$EXTERN
-  Socket-Open,
-  Socket-Close,
-  Socket-InitAddress,
-  Socket-DeinitAddress,
-  Socket-Bind,
-  Socket-Listen,
-  Socket-Accept,
-  Socket-Write,
-  Socket-Read;
+*$FROM LibraryEx
+$EXTERN Map;
 
 *$FROM Json
-$EXTERN Json-Stringify;
+$EXTERN Json-Parse, Json-Stringify;
 
-*$FROM HttpUtils
-$EXTERN DecodeHttpRequest, EncodeHttpResponse;
+*$FROM Http
+$EXTERN EncodeHttpResponse;
 
+*$FROM Server
+$EXTERN HttpServer-Create, HttpServer-Run;
 
-AF_INET { = 2 }
+*$FROM Storage
+$EXTERN LoadDashboards, DumpDashboards;
 
-SOCK_STREAM { = 1 }
-
-INADDR_ANY { = 0 }
+*$FROM models/DashboardGetDashboardDigest
+$EXTERN GetDashboardDigest;
 
 
 $ENTRY Go {
-  = <Socket-Open 69 <AF_INET> <SOCK_STREAM> 0>
-    <Socket-InitAddress 42 <AF_INET> <INADDR_ANY> 6969>
-      <Socket-Bind 69 42>
-      <Socket-Listen 69 5>
-      <Prout 'HTTP server is running at http://localhost:6969'>
-      <AcceptLoop 69 42 HandleRequest ()>
-    <Socket-DeinitAddress 42>
-    <Socket-Close 69>
-}
-
-
-AcceptLoop {
-  s.SocketNo s.AddressNo s.Handler t.Ctx
-    , <HandleRequest <Socket-Accept s.SocketNo s.AddressNo> t.Ctx>
-    : {
-      t.NewCtx = <AcceptLoop s.SocketNo s.AddressNo s.Handler t.NewCtx>
-    }
+  , <Prout 'HTTP server is running at http://localhost:6969'> :
+  , <HttpServer-Create (<LoadDashboards>) HandleRequest> : t.Server
+  = <HttpServer-Run t.Server 6969>;
 }
 
 
 HandleRequest {
-  s.ClientSocketNo t.Ctx
-    , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>>
-    : t.Method t.URI t.HttpVersion t.Headers e.Body
-    , <Route t.Ctx t.Method t.URI e.Body>
-    : {
-        t.NewCtx e.Response
-          = <Socket-Write s.ClientSocketNo e.Response>
-            <Socket-Close s.ClientSocketNo>
-            t.NewCtx
+  t.Ctx t.Method t.URI t.Headers e.Body
+    , <ValidateJsonRequest t.Headers e.Body> : {
+      Success t.Json
+        , <Route t.Ctx t.Method t.URI t.Headers t.Json> : t.NewCtx e.Response
+        , <DumpCtx t.NewCtx> :
+        = t.NewCtx e.Response;
+
+      Fails e.Response = e.Response;
     }
+}
+
+
+DumpCtx {
+  (t.Dashboards) = <DumpDashboards t.Dashboards>;
+}
+
+
+Route {
+  t.Dashboards ('POST') ('/get-dashboards') t.Headers t.Json
+    = <Handler-GetDashboards t.Dashboards t.Headers t.Json>;
+
+  /* t.Dashboards ('POST') ('/get-dashboard') t.Headers t.Json
+    = <Handler-GetDashboard t.Dashboards t.Headers t.Json>; */
+
+  t.Ctx (e.Method) (e.URI) t.Headers t.Json
+    = t.Ctx
+      <CreateResponse 404 (String 'Not Found :(')>;
+}
+
+
+
+Handler-GetDashboards {
+  t.Ctx t.Headers (Object /* empty */)
+    , t.Ctx : ((Array e.Dashboards))
+    = t.Ctx <CreateResponse 200 (Array <Map GetDashboardDigest e.Dashboards>)>;
+
+  t.Ctx t.Headers t.Json
+    = t.Ctx <CreateErrorResponse 400
+      'Bad action parameters.\n'
+      'Got: ' <Json-Stringify t.Json> '\n'
+      'Expected: {}'
+    >;
+}
+
+
+ValidateJsonRequest {
+  (e.Headers-B (('Content-Type') 'application/json') e.Headers-E) e.Body
+    , <Json-Parse e.Body>
+    : {
+      Success t.Json = Success t.Json;
+
+      Fails e.Error
+        = Fails
+          <CreateResponse 422
+            (Object
+              (
+                (String 'detail')
+                (String 'Failed to decode json: ' e.Error)
+              )
+            )
+          >;
+    };
+
+  t.Headers e.Body
+    = Fails
+      <CreateResponse 415
+        (Object
+          (
+            (String 'detail')
+            (String 'Expect non empty body to contains JSON and have "Content-Type: application/json" header')
+          )
+        )
+      >;
+}
+
+
+CreateErrorResponse {
+  s.Code e.Error
+    = <CreateResponse s.Code
+      (Object
+        (
+          (String 'detail')
+          (String e.Error)
+        )
+      )
+    >
 }
 
 
@@ -69,81 +124,4 @@ CreateResponse {
       )
       <Json-Stringify t.Json>
     >
-}
-
-
-Route {
-  t.Ctx ('POST') ('/get-dashboards') /* empty */
-    = t.Ctx
-      <CreateResponse 200
-        (Array
-          (Object
-            ((String 'dashboard_id') (Number (0)()()))
-            ((String 'title') (String 'Sample Dashboard'))
-            (
-              (String 'widgets')
-              (Array
-                (Object
-                  ((String 'widget_type') (String 'PieChart'))
-                  ((String 'title') (String 'Some Pie Chart'))
-                  ((String 'table') (String 'HumanResources.Employees'))
-                  ((String 'x_column') (String 'Gender'))
-                  (
-                    (String 'sections')
-                    (Array
-                      (Object
-                        ((String 'title') (String 'Man'))
-                        ((String 'percentage') (Number (89)()()))
-                      )
-                      (Object
-                        ((String 'title') (String 'Woman'))
-                        ((String 'percentage') (Number (10)()()))
-                      )
-                      (Object
-                        ((String 'title') (String 'Other'))
-                        ((String 'percentage') (Number (1)()()))
-                      )
-                    )
-                  )
-                )
-                (Object
-                  ((String 'widget_type') (String 'Histogram'))
-                  ((String 'title') (String 'Some Histogram'))
-                  ((String 'table') (String 'HumanResources.Employees'))
-                  ((String 'x_column') (String 'Age'))
-                  (
-                    (String 'bins')
-                    (Array
-                      (Object
-                        ((String 'left') (Number (23)()()))
-                        ((String 'right') (Number (30)()()))
-                        ((String 'value') (Number (80)()()))
-                      )
-                      (Object
-                        ((String 'left') (Number (31)()()))
-                        ((String 'right') Null)
-                        ((String 'value') (Number (20)()()))
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            (
-              (String 'dataSource')
-              (Object
-                ((String 'host') (String 'localhost'))
-                ((String 'port') (Number (5432)()()))
-                ((String 'username') (String 'postgres'))
-                ((String 'password') (String 'postgres'))
-                ((String 'database') (String 'postgres'))
-              )
-            )
-          )
-        )
-      >;
-
-  t.Ctx (e.Method) (e.URI) e.Body
-    = t.Ctx
-      <CreateResponse 404 (String 'Not Found :(')>;
 }

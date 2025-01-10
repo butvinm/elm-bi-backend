@@ -1,0 +1,74 @@
+*$FROM LibraryEx
+$EXTERN Apply;
+
+*$FROM Socket
+$EXTERN
+  Socket-Open,
+  Socket-Close,
+  Socket-InitAddress,
+  Socket-DeinitAddress,
+  Socket-Bind,
+  Socket-Listen,
+  Socket-Accept,
+  Socket-Write,
+  Socket-Read;
+
+*$FROM Http
+$EXTERN DecodeHttpRequest;
+
+
+$ENTRY HttpServer-Create {
+  t.Ctx t.Handler = ((Ctx t.Ctx) (Handler t.Handler));
+}
+
+
+HttpServer-Ctx {
+  (e.Server-B (Ctx t.Ctx) e.Server-E) = t.Ctx;
+  (e.Server-B (Ctx t.Ctx) e.Server-E) t.NewCtx = (e.Server-B (Ctx t.NewCtx) e.Server-E);
+}
+
+
+HttpServer-Handler {
+  (e.Server-B (Handler t.Handler) e.Server-E) = t.Handler;
+  (e.Server-B (Handler t.Handler) e.Server-E) t.NewHandler = (e.Server-B (Handler t.NewHandler) e.Server-E);
+}
+
+
+AF_INET { = 2 }
+SOCK_STREAM { = 1 }
+INADDR_ANY { = 0 }
+
+SOCKET_NO { = 69 }
+ADDRESS_NO { = 42 }
+MAX_CONNS { = 5 }
+
+
+$ENTRY HttpServer-Run {
+  t.Server s.Port
+    = <Socket-Open <SOCKET_NO> <AF_INET> <SOCK_STREAM> 0>
+      <Socket-InitAddress <ADDRESS_NO> <AF_INET> <INADDR_ANY> s.Port>
+        <Socket-Bind <SOCKET_NO> <ADDRESS_NO>>
+        <Socket-Listen <SOCKET_NO> <MAX_CONNS>>
+        <AcceptLoop t.Server <SOCKET_NO> <ADDRESS_NO>>
+      <Socket-DeinitAddress <ADDRESS_NO>>
+      <Socket-Close <SOCKET_NO>>
+}
+
+
+AcceptLoop {
+  t.Server s.SocketNo s.AddressNo
+    , <Socket-Accept s.SocketNo s.AddressNo> : s.ClientSocketNo
+    = <ProcessRequest t.Server s.ClientSocketNo>
+      <AcceptLoop t.Server s.SocketNo s.AddressNo>
+}
+
+
+ProcessRequest {
+  t.Server s.ClientSocketNo
+    , <HttpServer-Ctx t.Server> <HttpServer-Handler t.Server> : t.Ctx t.Handler
+    , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>> : t.Method t.URI t.HttpVersion t.Headers e.Body
+    , <Apply t.Handler t.Ctx t.Method t.URI t.Headers e.Body> : t.NewCtx e.Response
+    = <Socket-Write s.ClientSocketNo e.Response>
+      <Socket-Close s.ClientSocketNo>
+      <HttpServer-Ctx t.Server t.NewCtx>
+}
