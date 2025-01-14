@@ -30,7 +30,8 @@ $ENTRY DataSource-Connect {
     , <PQ-ConnectDB e.ConnInfo> : s.ConnNo
     , <PQ-Status s.ConnNo> : {
       0 = Success s.ConnNo;
-      s.Status = Fails <PQ-ErrorMessage s.ConnNo>;
+
+      s.Status = Fails s.ConnNo <PQ-ErrorMessage s.ConnNo>;
     }
 }
 

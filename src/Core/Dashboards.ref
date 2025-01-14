@@ -22,10 +22,14 @@ $ENTRY Dashboard-Extended {
             , <DataSource-Finish s.DataSourceConn> :
             = Success t.DashboardExtended;
 
-          Fails e.Errors = Fails e.Errors;
+          Fails e.Errors
+            , <DataSource-Finish s.DataSourceConn> :
+            = Fails e.Errors;
         };
 
-      Fails e.Errors = Fails e.Errors;
+      Fails s.DataSourceConn e.Errors
+        , <DataSource-Finish s.DataSourceConn> :
+        = Fails e.Errors;
     }
 }
 
@@ -56,4 +60,3 @@ Dashboard-Extended-ExtendDataSource {
       Fails e.Errors = Fails e.Errors;
     }
 }
-

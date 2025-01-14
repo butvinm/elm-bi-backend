@@ -13,6 +13,12 @@ $EXTERN GetDashboardHandler;
 *$FROM Api/DeleteDashboardHandler
 $EXTERN DeleteDashboardHandler;
 
+*$FROM Api/UpdateDashboardHandler
+$EXTERN UpdateDashboardHandler;
+
+*$FROM Api/CreateDashboardHandler
+$EXTERN CreateDashboardHandler;
+
 *$FROM Api/ApiUtils
 $EXTERN ValidateJsonRequest, CreateErrorResponse;
 
@@ -43,6 +49,12 @@ Route {
 
   t.Ctx ('POST') ('/get-dashboard') t.Headers t.Json
     = <GetDashboardHandler t.Ctx t.Headers t.Json>;
+
+  t.Ctx ('POST') ('/create-dashboard') t.Headers t.Json
+    = <CreateDashboardHandler t.Ctx t.Headers t.Json>;
+
+  t.Ctx ('POST') ('/update-dashboard') t.Headers t.Json
+    = <UpdateDashboardHandler t.Ctx t.Headers t.Json>;
 
   t.Ctx ('POST') ('/delete-dashboard') t.Headers t.Json
     = <DeleteDashboardHandler t.Ctx t.Headers t.Json>;

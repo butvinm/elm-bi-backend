@@ -14,6 +14,8 @@ $ENTRY DataSource-Host {
 * get
   (Object e.B ((String 'host') t.Host) e.E) = t.Host;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'host') t.Host) e.E) t.NewHost
     = (Object e.B ((String 'host') t.NewHost) e.E);
@@ -23,6 +25,8 @@ $ENTRY DataSource-Host {
 $ENTRY DataSource-Port {
 * get
   (Object e.B ((String 'port') t.Port) e.E) = t.Port;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'port') t.Port) e.E) t.NewPort
@@ -34,6 +38,8 @@ $ENTRY DataSource-Username {
 * get
   (Object e.B ((String 'username') t.Username) e.E) = t.Username;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'username') t.Username) e.E) t.NewUsername
     = (Object e.B ((String 'username') t.NewUsername) e.E);
@@ -43,6 +49,8 @@ $ENTRY DataSource-Username {
 $ENTRY DataSource-Password {
 * get
   (Object e.B ((String 'password') t.Password) e.E) = t.Password;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'password') t.Password) e.E) t.NewPassword
@@ -54,6 +62,8 @@ $ENTRY DataSource-Database {
 * get
   (Object e.B ((String 'database') t.Database) e.E) = t.Database;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'database') t.Database) e.E) t.NewDatabase
     = (Object e.B ((String 'database') t.NewDatabase) e.E);
@@ -64,6 +74,8 @@ $ENTRY DataSource-Database {
 $ENTRY DataSource-Tables {
 * get
   (Object e.B ((String 'tables') t.Tables) e.E) = t.Tables;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'tables') t.Tables) e.E) t.NewTables
@@ -87,6 +99,8 @@ $ENTRY Table-Name {
 * get
   (Object e.B ((String 'name') t.Name) e.E) = t.Name;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'name') t.Name) e.E) t.NewName
     = (Object e.B ((String 'name') t.NewName) e.E);
@@ -96,6 +110,8 @@ $ENTRY Table-Name {
 $ENTRY Table-Columns {
 * get
   (Object e.B ((String 'columns') t.Columns) e.E) = t.Columns;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'columns') t.Columns) e.E) t.NewColumns
@@ -116,6 +132,8 @@ $ENTRY Column-Name {
 * get
   (Object e.B ((String 'name') t.Name) e.E) = t.Name;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'name') t.Name) e.E) t.NewName
     = (Object e.B ((String 'name') t.NewName) e.E);
@@ -125,6 +143,8 @@ $ENTRY Column-Name {
 $ENTRY Column-DataType {
 * get
   (Object e.B ((String 'dataType') t.DataType) e.E) = t.DataType;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'dataType') t.DataType) e.E) t.NewDataType

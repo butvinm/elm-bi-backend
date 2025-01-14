@@ -1,0 +1,43 @@
+*$FROM Api/ApiUtils
+$EXTERN CreateResponse, CreateErrorResponse, CreateParametersErrorResponse;
+
+*$FROM Core/Dashboards
+$EXTERN Dashboard-Extended;
+
+*$FROM Models/DashboardModel
+$EXTERN
+  Dashboard-Id,
+  Dashboard-Title,
+  Dashboard-DataSource,
+  FindDashboardById,
+  InsertDashboard;
+
+
+$ENTRY UpdateDashboardHandler {
+  t.Ctx t.Headers
+  t.DashboardCreate
+    , <Dashboard-Id t.DashboardCreate> : t.Id
+    , <Dashboard-Title t.DashboardCreate> : t.Title
+    , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
+    , <FindDashboardById t.Ctx t.Id> : {
+      /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+
+      t.Dashboard
+        , <Dashboard-DataSource <Dashboard-Title t.Dashboard t.Title> t.DataSource> : t.UpdatedDashboard
+        , <Dashboard-Extended t.UpdatedDashboard>
+        : {
+          Success t.ExtendedDashboard
+            , <InsertDashboard t.Ctx t.Id t.UpdatedDashboard> : t.UpdatedDashboards
+            = t.UpdatedDashboards <CreateResponse 200 t.ExtendedDashboard>;
+
+          Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+        }
+    };
+
+  t.Ctx t.Headers t.Json
+    = t.Ctx
+      <CreateParametersErrorResponse
+        t.Json
+        '{ dashboard_id: integer, title: string, dataSource: { host: string, port: integer, username: string, database: string, password: string } }'
+      >;
+}

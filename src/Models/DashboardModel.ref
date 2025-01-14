@@ -1,6 +1,18 @@
+$ENTRY Dashboard {
+  t.Id t.Title t.Widgets t.DataSource
+    = (Object
+        ((String 'dashboard_id') t.Id)
+        ((String 'title') t.Title)
+        ((String 'widgets') t.Widgets)
+        ((String 'dataSource') t.DataSource)
+      )
+}
+
 $ENTRY Dashboard-Id {
 * get
   (Object e.B ((String 'dashboard_id') t.Id) e.E) = t.Id;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'dashboard_id') t.Id) e.E) t.NewId
@@ -12,6 +24,8 @@ $ENTRY Dashboard-Title {
 * get
   (Object e.B ((String 'title') t.Title) e.E) = t.Title;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'title') t.Title) e.E) t.NewTitle
     = (Object e.B ((String 'title') t.NewTitle) e.E);
@@ -22,6 +36,8 @@ $ENTRY Dashboard-Widgets {
 * get
   (Object e.B ((String 'widgets') t.Widgets) e.E) = t.Widgets;
 
+  (Object e.B) = /* empty */;
+
 * set
   (Object e.B ((String 'widgets') t.Widgets) e.E) t.NewWidgets
     = (Object e.B ((String 'widgets') t.NewWidgets) e.E);
@@ -31,6 +47,8 @@ $ENTRY Dashboard-Widgets {
 $ENTRY Dashboard-DataSource {
 * get
   (Object e.B ((String 'dataSource') t.DataSource) e.E) = t.DataSource;
+
+  (Object e.B) = /* empty */;
 
 * set
   (Object e.B ((String 'dataSource') t.DataSource) e.E) t.NewDataSource
@@ -70,7 +88,30 @@ Do-DeleteDashboardById {
     = (Array e.Passed e.Dashboards);
 
   (e.Passed) (Array t.Dashboard e.Dashboards) t.Id
-    = <DeleteDashboardById (e.Passed t.Dashboard) (Array e.Dashboards) t.Id>;
+    = <Do-DeleteDashboardById (e.Passed t.Dashboard) (Array e.Dashboards) t.Id>;
 
   (e.Passed) (Array /* empty */) t.Id = (Array e.Passed);
+}
+
+
+$ENTRY InsertDashboard {
+  t.Dashboards t.Id t.Dashboard = <Do-InsertDashboard () t.Dashboards t.Id t.Dashboard>;
+}
+
+
+Do-InsertDashboard {
+  (e.Passed) (Array t.Dashboard e.Dashboards) t.Id t.NewDashboard
+    , <Dashboard-Id t.Dashboard> : t.Id
+    = (Array e.Passed t.NewDashboard e.Dashboards);
+
+  (e.Passed) (Array t.Dashboard e.Dashboards) t.Id t.NewDashboard
+    = <Do-InsertDashboard (e.Passed t.Dashboard) (Array e.Dashboards) t.Id t.NewDashboard>;
+
+  (e.Passed) (Array /* empty */) t.Id t.NewDashboard
+    = (Array e.Passed t.NewDashboard);
+}
+
+
+$ENTRY GenerateDashboardId {
+  = (Number (<RandomDigit 666>) () ());
 }

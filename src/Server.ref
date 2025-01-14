@@ -58,8 +58,8 @@ $ENTRY HttpServer-Run {
 AcceptLoop {
   t.Server s.SocketNo s.AddressNo
     , <Socket-Accept s.SocketNo s.AddressNo> : s.ClientSocketNo
-    = <ProcessRequest t.Server s.ClientSocketNo>
-      <AcceptLoop t.Server s.SocketNo s.AddressNo>
+    , <ProcessRequest t.Server s.ClientSocketNo> : t.NewServer
+    = <AcceptLoop t.NewServer s.SocketNo s.AddressNo>
 }
 
 
@@ -68,7 +68,7 @@ ProcessRequest {
     , <HttpServer-Ctx t.Server> <HttpServer-Handler t.Server> : t.Ctx t.Handler
     , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>> : t.Method t.URI t.HttpVersion t.Headers e.Body
     , <Apply t.Handler t.Ctx t.Method t.URI t.Headers e.Body> : t.NewCtx e.Response
-    = <Socket-Write s.ClientSocketNo e.Response>
-      <Socket-Close s.ClientSocketNo>
-      <HttpServer-Ctx t.Server t.NewCtx>
+    , <Socket-Write s.ClientSocketNo e.Response> :
+    , <Socket-Close s.ClientSocketNo> :
+    = <HttpServer-Ctx t.Server t.NewCtx>
 }

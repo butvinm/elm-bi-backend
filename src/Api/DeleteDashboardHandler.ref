@@ -1,8 +1,11 @@
+*$FROM Utils
+$EXTERN Map;
+
 *$FROM Api/ApiUtils
 $EXTERN CreateResponse, CreateErrorResponse, CreateParametersErrorResponse;
 
 *$FROM Models/DashboardModel
-$EXTERN FindDashboardById, DeleteDashboardById;
+$EXTERN Dashboard-Digest, FindDashboardById, DeleteDashboardById;
 
 
 $ENTRY DeleteDashboardHandler {
@@ -12,8 +15,8 @@ $ENTRY DeleteDashboardHandler {
       /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
 
       t.Dashboard
-        , <DeleteDashboardById t.Ctx t.Id> : t.UpdatedDashboards
-        = t.UpdatedDashboards <CreateResponse 200 t.UpdatedDashboards>;
+        , <DeleteDashboardById t.Ctx t.Id> : (Array e.UpdatedDashboards)
+        = (Array e.UpdatedDashboards) <CreateResponse 200 (Array <Map Dashboard-Digest e.UpdatedDashboards>)>;
     };
 
   t.Ctx t.Headers t.Json

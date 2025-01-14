@@ -1,0 +1,44 @@
+*$FROM Api/ApiUtils
+$EXTERN CreateResponse, CreateErrorResponse, CreateParametersErrorResponse;
+
+*$FROM Core/Dashboards
+$EXTERN Dashboard-Extended;
+
+*$FROM Models/DashboardModel
+$EXTERN
+  Dashboard,
+  Dashboard-Title,
+  Dashboard-DataSource,
+  GenerateDashboardId,
+  InsertDashboard;
+
+
+$ENTRY CreateDashboardHandler {
+  t.Ctx t.Headers
+  t.DashboardCreate
+    , <Dashboard-Title t.DashboardCreate> : t.Title
+    , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
+    , <GenerateDashboardId> : t.Id
+    , <Dashboard
+        t.Id
+        t.Title
+        (Array )
+        t.DataSource
+      >
+    : t.CreatedDashboard
+    , <Dashboard-Extended t.CreatedDashboard>
+    : {
+      Success t.ExtendedDashboard
+        , <InsertDashboard t.Ctx t.Id t.CreatedDashboard> : t.UpdatedDashboards
+        = t.UpdatedDashboards <CreateResponse 201 t.ExtendedDashboard>;
+
+      Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+    };
+
+  t.Ctx t.Headers t.Json
+    = t.Ctx
+      <CreateParametersErrorResponse
+        t.Json
+        '{ title: string, dataSource: { host: string, port: integer, username: string, database: string, password: string } }'
+      >;
+}
