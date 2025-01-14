@@ -1,14 +1,18 @@
+*$FROM LibraryEx
+$EXTERN Map;
+
 *$FROM Models/WidgetModel
-$EXTERN Widget-WidgetType;
+$EXTERN Widget-WidgetType, Widget-Table, Widget-DataColumn, Widget-Data;
+
+*$FROM Core/DataSources
+$EXTERN DataSource-FetchQuery;
 
 
 $ENTRY Widget-Extended {
   s.DataSourceConn t.Widget
     , <FetchWidgetData s.DataSourceConn t.Widget>
     : {
-      Success t.WidgetData
-        , t.Widget : (Object e.WidgetFields)
-        = Success (Object e.WidgetFields ((String 'data') t.WidgetData));
+      Success t.Data = Success <Widget-Data t.Widget t.Data>;
 
       Fails e.Error = Fails e.Error;
     }
@@ -19,7 +23,34 @@ FetchWidgetData {
   s.DataSourceConn t.Widget
     , <Widget-WidgetType t.Widget>
     : {
-      (String 'PieChart') = Success (Array );
+      (String 'PieChart') = <FetchPieChartData s.DataSourceConn t.Widget>;
       (String 'Histogram') = Success (Array );
     }
+}
+
+
+FetchPieChartData {
+  s.DataSourceConn t.Widget
+    , <Widget-Table t.Widget> : (String e.Table)
+    , <Widget-DataColumn t.Widget> : (String e.DataColumn)
+    , <DataSource-FetchQuery s.DataSourceConn
+      'SELECT '
+        e.DataColumn ', '
+        'COUNT(' e.DataColumn ') '
+      'FROM ' e.Table ' '
+      'GROUP BY ' e.DataColumn
+    >
+    : {
+      Success e.Tuples = Success (Array <Map widgets_PieChartDatumFromTuple e.Tuples>);
+      Fails e.Error = Fails e.Error;
+    }
+}
+
+
+$ENTRY widgets_PieChartDatumFromTuple {
+  ((e.Title) (e.Count))
+    = (Object
+      ((String 'title') (String e.Title))
+      ((String 'count') (Number (<Numb e.Count>) () ()))
+    )
 }

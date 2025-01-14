@@ -1,23 +1,132 @@
+$ENTRY DataSource {
+  t.Host t.Port t.Username t.Password t.Database
+    = (Object
+      ((String 'host') t.Host)
+      ((String 'port') t.Port)
+      ((String 'username') t.Username)
+      ((String 'password') t.Password)
+      ((String 'database') t.Database)
+    );
+}
+
+
 $ENTRY DataSource-Host {
+* get
   (Object e.B ((String 'host') t.Host) e.E) = t.Host;
+
+* set
+  (Object e.B ((String 'host') t.Host) e.E) t.NewHost
+    = (Object e.B ((String 'host') t.NewHost) e.E);
 }
 
 
 $ENTRY DataSource-Port {
+* get
   (Object e.B ((String 'port') t.Port) e.E) = t.Port;
+
+* set
+  (Object e.B ((String 'port') t.Port) e.E) t.NewPort
+    = (Object e.B ((String 'port') t.NewPort) e.E);
 }
 
 
 $ENTRY DataSource-Username {
+* get
   (Object e.B ((String 'username') t.Username) e.E) = t.Username;
+
+* set
+  (Object e.B ((String 'username') t.Username) e.E) t.NewUsername
+    = (Object e.B ((String 'username') t.NewUsername) e.E);
 }
 
 
 $ENTRY DataSource-Password {
+* get
   (Object e.B ((String 'password') t.Password) e.E) = t.Password;
+
+* set
+  (Object e.B ((String 'password') t.Password) e.E) t.NewPassword
+    = (Object e.B ((String 'password') t.NewPassword) e.E);
 }
 
 
 $ENTRY DataSource-Database {
+* get
   (Object e.B ((String 'database') t.Database) e.E) = t.Database;
+
+* set
+  (Object e.B ((String 'database') t.Database) e.E) t.NewDatabase
+    = (Object e.B ((String 'database') t.NewDatabase) e.E);
+}
+
+
+
+$ENTRY DataSource-Tables {
+* get
+  (Object e.B ((String 'tables') t.Tables) e.E) = t.Tables;
+
+* set
+  (Object e.B ((String 'tables') t.Tables) e.E) t.NewTables
+    = (Object e.B ((String 'tables') t.NewTables) e.E);
+
+  (Object e.B) t.NewTables
+    = (Object e.B ((String 'tables') t.NewTables));
+}
+
+
+$ENTRY Table {
+  t.Name t.Columns
+    = (Object
+      ((String 'name') t.Name)
+      ((String 'columns') t.Columns)
+    )
+}
+
+
+$ENTRY Table-Name {
+* get
+  (Object e.B ((String 'name') t.Name) e.E) = t.Name;
+
+* set
+  (Object e.B ((String 'name') t.Name) e.E) t.NewName
+    = (Object e.B ((String 'name') t.NewName) e.E);
+}
+
+
+$ENTRY Table-Columns {
+* get
+  (Object e.B ((String 'columns') t.Columns) e.E) = t.Columns;
+
+* set
+  (Object e.B ((String 'columns') t.Columns) e.E) t.NewColumns
+    = (Object e.B ((String 'columns') t.NewColumns) e.E);
+}
+
+
+$ENTRY Column {
+  t.Name t.DataType
+    = (Object
+      ((String 'name') t.Name)
+      ((String 'dataType') t.DataType)
+    )
+}
+
+
+$ENTRY Column-Name {
+* get
+  (Object e.B ((String 'name') t.Name) e.E) = t.Name;
+
+* set
+  (Object e.B ((String 'name') t.Name) e.E) t.NewName
+    = (Object e.B ((String 'name') t.NewName) e.E);
+}
+
+
+$ENTRY Column-DataType {
+* get
+  (Object e.B ((String 'dataType') t.DataType) e.E) = t.DataType;
+
+* set
+  (Object e.B ((String 'dataType') t.DataType) e.E) t.NewDataType
+    = (Object e.B ((String 'dataType') t.NewDataType) e.E);
 }

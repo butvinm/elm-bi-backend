@@ -15,7 +15,10 @@ $EXTERN
   DataSource-Port,
   DataSource-Username,
   DataSource-Password,
-  DataSource-Database;
+  DataSource-Database,
+  DataSource-Tables,
+  Table,
+  Column;
 
 *$FROM Utils
 $EXTERN TryMap;
@@ -61,8 +64,7 @@ DataSource-Extended-ExtendTables {
         , <TryMap (datasources_TableFromTuple s.DataSourceConn) e.TableTuples>
         : {
           Success e.Tables
-            , t.DataSource : (Object e.DataSourceFields)
-            = Success (Object e.DataSourceFields ((String 'tables') (Array e.Tables)));
+            = Success <DataSource-Tables t.DataSource (Array e.Tables)>;
 
           Fails e.Error = Fails e.Error;
         };
@@ -77,10 +79,11 @@ $ENTRY datasources_TableFromTuple {
    , <FetchTableColumns s.DataSourceConn (e.TableSchema) (e.TableName) >
    : {
     Success e.ColumnTuples
-      = Success (Object
-          ((String 'name') (String '"' e.TableSchema '"' '.' '"' e.TableName '"'))
-          ((String 'columns') (Array <Map datasource_ColumnFromTuple e.ColumnTuples>))
-        );
+      = Success
+        <Table
+          (String '"' e.TableSchema '"' '.' '"' e.TableName '"')
+          (Array <Map datasource_ColumnFromTuple e.ColumnTuples>)
+        >;
 
     Fails e.Error = Fails e.Error;
    };
@@ -91,10 +94,7 @@ $ENTRY datasources_TableFromTuple {
 
 $ENTRY datasource_ColumnFromTuple {
   ((e.ColumnName) (e.ColumnDataType))
-    = (Object
-        ((String 'name') (String e.ColumnName))
-        ((String 'dataType') (String e.ColumnDataType))
-      )
+    = <Column (String e.ColumnName) (String e.ColumnDataType)>
 }
 
 

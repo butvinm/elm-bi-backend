@@ -1,27 +1,27 @@
-$ENTRY GetDashboardDigest {
-  t.Dashboard
-    = (Object
-      ((String 'dashboard_id') <Dashboard-Id t.Dashboard>)
-      ((String 'title') <Dashboard-Title t.Dashboard>)
-    );
-}
-
-
 $ENTRY Dashboard-Id {
 * get
   (Object e.B ((String 'dashboard_id') t.Id) e.E) = t.Id;
+
+* set
+  (Object e.B ((String 'dashboard_id') t.Id) e.E) t.NewId
+    = (Object e.B ((String 'dashboard_id') t.NewId) e.E);
 }
 
 
 $ENTRY Dashboard-Title {
 * get
   (Object e.B ((String 'title') t.Title) e.E) = t.Title;
+
+* set
+  (Object e.B ((String 'title') t.Title) e.E) t.NewTitle
+    = (Object e.B ((String 'title') t.NewTitle) e.E);
 }
 
 
 $ENTRY Dashboard-Widgets {
 * get
   (Object e.B ((String 'widgets') t.Widgets) e.E) = t.Widgets;
+
 * set
   (Object e.B ((String 'widgets') t.Widgets) e.E) t.NewWidgets
     = (Object e.B ((String 'widgets') t.NewWidgets) e.E);
@@ -31,9 +31,19 @@ $ENTRY Dashboard-Widgets {
 $ENTRY Dashboard-DataSource {
 * get
   (Object e.B ((String 'dataSource') t.DataSource) e.E) = t.DataSource;
+
 * set
   (Object e.B ((String 'dataSource') t.DataSource) e.E) t.NewDataSource
     = (Object e.B ((String 'dataSource') t.NewDataSource) e.E);
+}
+
+
+$ENTRY Dashboard-Digest {
+  t.Dashboard
+    = (Object
+      ((String 'dashboard_id') <Dashboard-Id t.Dashboard>)
+      ((String 'title') <Dashboard-Title t.Dashboard>)
+    );
 }
 
 

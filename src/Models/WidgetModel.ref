@@ -1,3 +1,73 @@
+$ENTRY Widget {
+  t.Id t.WidgetType t.Title t.Table t.DataColumn
+    = (Object
+      ((String 'widget_id') t.Id)
+      ((String 'widget_type') t.WidgetType)
+      ((String 'title') t.Title)
+      ((String 'table') t.Table)
+      ((String 'data_column') t.DataColumn)
+    )
+}
+
+
+$ENTRY Widget-Id {
+* get
+  (Object e.B ((String 'widget_id') t.Id) e.E) = t.Id;
+
+* set
+  (Object e.B ((String 'widget_id') t.Id) e.E) t.NewId
+    = (Object e.B ((String 'widget_id') t.NewId) e.E);
+}
+
+
 $ENTRY Widget-WidgetType {
-    (Object e.B ((String 'widget_type') t.WidgetType) e.E) = t.WidgetType;
+* get
+  (Object e.B ((String 'widget_type') t.WidgetType) e.E) = t.WidgetType;
+
+* set
+  (Object e.B ((String 'widget_type') t.WidgetType) e.E) t.NewWidgetType
+    = (Object e.B ((String 'widget_type') t.NewWidgetType) e.E);
+}
+
+
+$ENTRY Widget-Title {
+* get
+  (Object e.B ((String 'title') t.Title) e.E) = t.Title;
+
+* set
+  (Object e.B ((String 'title') t.Title) e.E) t.NewTitle
+    = (Object e.B ((String 'title') t.NewTitle) e.E);
+}
+
+
+$ENTRY Widget-Table {
+* get
+  (Object e.B ((String 'table') t.Table) e.E) = t.Table;
+
+* set
+  (Object e.B ((String 'table') t.Table) e.E) t.NewTable
+    = (Object e.B ((String 'table') t.NewTable) e.E);
+}
+
+
+$ENTRY Widget-DataColumn {
+* get
+  (Object e.B ((String 'data_column') t.DataColumn) e.E) = t.DataColumn;
+
+* set
+  (Object e.B ((String 'data_column') t.DataColumn) e.E) t.NewDataColumn
+    = (Object e.B ((String 'data_column') t.NewDataColumn) e.E);
+}
+
+
+$ENTRY Widget-Data {
+* get
+  (Object e.B ((String 'data') t.Data) e.E) = t.Data;
+
+* set
+  (Object e.B ((String 'data') t.Data) e.E) t.NewData
+    = (Object e.B ((String 'data') t.NewData) e.E);
+
+  (Object e.B) t.NewData
+    = (Object e.B ((String 'data') t.NewData));
 }
