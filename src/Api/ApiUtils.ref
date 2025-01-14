@@ -15,7 +15,12 @@ $ENTRY ValidateJsonRequest {
 
   t.Headers e.Body
     = Fails
-      <CreateResponse 415 'Expect non empty body to contains JSON and have "Content-Type: application/json" header'>;
+      <CreateErrorResponse 415 'Expect non empty body to contains JSON and have "Content-Type: application/json" header'>;
+}
+
+
+$ENTRY CreateOptionsResponse {
+  = <CreateResponse 204 (String )>
 }
 
 
@@ -49,6 +54,10 @@ $ENTRY CreateResponse {
       (
         (('Content-Type') 'application/json')
         (('Connection') 'close')
+        (('Access-Control-Allow-Origin') '*')
+        (('Access-Control-Allow-Methods') 'GET, POST, PUT, DELETE, OPTIONS')
+        (('Access-Control-Allow-Headers') 'Content-Type, Authorization, X-Requested-With')
+        (('Access-Control-Max-Age') '86400')
       )
       <Json-Stringify t.Json>
     >

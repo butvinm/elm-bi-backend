@@ -11,9 +11,9 @@ $EXTERN UnBracket;
 $ENTRY LoadDashboards {
   , <Json-Parse <UnBracket <LoadFile <GetEnv 'ELM_BI_STORAGE_FILE'>>>>
   : {
-    Success (Array e.Dashboards) = (Array e.Dashboards);
-    Success e.Wtf = <Prout 'Storage contains unexpected data: ' e.Wtf> <Exit 1>;
-    Fails e.Error = <Prout 'Failed to parse storage file: ' e.Error> <Exit 1>;
+    Success (Array e.Dashboards) = Success (Array e.Dashboards);
+    Success e.Wtf = Fails 'Storage contains unexpected data: ' e.Wtf;
+    Fails e.Error = Fails 'Failed to parse storage file: ' e.Error;
   }
 }
 

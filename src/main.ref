@@ -26,17 +26,28 @@ $EXTERN AddWidgetHandler;
 $EXTERN DeleteWidgetHandler;
 
 *$FROM Api/ApiUtils
-$EXTERN ValidateJsonRequest, CreateErrorResponse;
+$EXTERN ValidateJsonRequest, CreateOptionsResponse, CreateErrorResponse;
 
 
 $ENTRY Go {
   , <Prout 'HTTP server is running at http://localhost:6969'> :
-  , <HttpServer-Create <LoadDashboards> HandleRequest> : t.Server
-  = <HttpServer-Run t.Server 6969>;
+  , <LoadDashboards>
+  : {
+    Success t.Dashboards
+      , <HttpServer-Create t.Dashboards HandleRequest> : t.Server
+      = <HttpServer-Run t.Server 6969>;
+
+    Fails e.Error
+      , <Prout e.Error> :
+      = <Exit 1>;
+  }
 }
 
 
 HandleRequest {
+  t.Ctx ('OPTIONS') t.URI t.Headers e.Body
+    = t.Ctx <CreateOptionsResponse>;
+
   t.Ctx t.Method t.URI t.Headers e.Body
     , <ValidateJsonRequest t.Headers e.Body> : {
       Success t.Json
