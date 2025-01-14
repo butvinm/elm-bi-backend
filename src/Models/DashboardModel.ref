@@ -57,3 +57,20 @@ $ENTRY FindDashboardById {
 
   (Array /* empty */) t.Id = /* empty */;
 }
+
+
+$ENTRY DeleteDashboardById {
+  t.Dashboards t.Id = <Do-DeleteDashboardById () t.Dashboards t.Id>;
+}
+
+
+Do-DeleteDashboardById {
+  (e.Passed) (Array t.Dashboard e.Dashboards) t.Id
+    , <Dashboard-Id t.Dashboard> : t.Id
+    = (Array e.Passed e.Dashboards);
+
+  (e.Passed) (Array t.Dashboard e.Dashboards) t.Id
+    = <DeleteDashboardById (e.Passed t.Dashboard) (Array e.Dashboards) t.Id>;
+
+  (e.Passed) (Array /* empty */) t.Id = (Array e.Passed);
+}

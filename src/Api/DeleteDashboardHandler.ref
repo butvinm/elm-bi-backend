@@ -1,0 +1,21 @@
+*$FROM Api/ApiUtils
+$EXTERN CreateResponse, CreateErrorResponse, CreateParametersErrorResponse;
+
+*$FROM Models/DashboardModel
+$EXTERN FindDashboardById, DeleteDashboardById;
+
+
+$ENTRY DeleteDashboardHandler {
+  t.Ctx t.Headers
+  (Object ((String 'dashboard_id') t.Id))
+    , <FindDashboardById t.Ctx t.Id> : {
+      /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+
+      t.Dashboard
+        , <DeleteDashboardById t.Ctx t.Id> : t.UpdatedDashboards
+        = t.UpdatedDashboards <CreateResponse 200 t.UpdatedDashboards>;
+    };
+
+  t.Ctx t.Headers t.Json
+    = t.Ctx <CreateParametersErrorResponse t.Json '{ dashboard_id: integer }'>;
+}
