@@ -7,6 +7,9 @@ $EXTERN Widget-WidgetType, Widget-Table, Widget-DataColumn, Widget-Data;
 *$FROM Core/DataSources
 $EXTERN DataSource-FetchQuery;
 
+*$FROM Utils
+$EXTERN TryMap;
+
 
 $ENTRY Widget-Extended {
   s.DataSourceConn t.Widget
@@ -24,7 +27,7 @@ FetchWidgetData {
     , <Widget-WidgetType t.Widget>
     : {
       (String 'PieChart') = <FetchPieChartData s.DataSourceConn t.Widget>;
-      (String 'Histogram') = Success (Array );
+      (String 'Histogram') = <FetchHistogramData s.DataSourceConn t.Widget>;
     }
 }
 
@@ -53,4 +56,53 @@ $ENTRY widgets_PieChartDatumFromTuple {
       ((String 'title') (String e.Title))
       ((String 'count') (Number (<Numb e.Count>) () ()))
     )
+}
+
+
+FetchHistogramData {
+  s.DataSourceConn t.Widget
+    , <Widget-Table t.Widget> : (String e.Table)
+    , <Widget-DataColumn t.Widget> : (String e.DataColumn)
+    , <DataSource-FetchQuery s.DataSourceConn 'SELECT ' e.DataColumn ' FROM ' e.Table>
+    : {
+      Success e.Tuples
+        , <TryMap widgets_HistogramDatumFromTuple e.Tuples>
+        : {
+          Success e.Values = Success (Array e.Values);
+          Fails e.Error = Fails 'Histogram can only use numerical data';
+        };
+
+      Fails e.Error = Fails e.Error;
+    }
+}
+
+
+$ENTRY widgets_HistogramDatumFromTuple {
+  ((e.Integer '.' e.Fraction))
+    , <IsNumber e.Integer> : True
+    , <IsDigits e.Fraction> : True
+    = Success (Number (<Numb e.Integer>) (<Numb e.Fraction>) ());
+
+  ((e.Integer))
+    , <IsNumber e.Integer> : True
+    = Success (Number (<Numb e.Integer>) () ());
+
+  ((e.Nan)) = Fails 'Not a number';
+}
+
+
+IsNumber {
+  '-' e.Number = <IsDigits e.Number>;
+  e.Number = <IsDigits e.Number>;
+}
+
+
+IsDigits {
+  s.Digit, '0123456789' : e.B s.Digit e.E = True;
+
+  s.Digit e.Digits
+    , '0123456789' : e.B s.Digit e.E
+    = <IsDigits e.Digits>;
+
+  e.Nan = False;
 }
