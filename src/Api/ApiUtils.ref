@@ -1,0 +1,55 @@
+*$FROM Json
+$EXTERN Json-Parse, Json-Stringify;
+
+*$FROM Http
+$EXTERN EncodeHttpResponse;
+
+
+$ENTRY ValidateJsonRequest {
+  (e.Headers-B (('Content-Type') 'application/json') e.Headers-E) e.Body
+    , <Json-Parse e.Body>
+    : {
+      Success t.Json = Success t.Json;
+      Fails e.Error = Fails <CreateErrorResponse 422 'Failed to decode json: ' e.Error>;
+    };
+
+  t.Headers e.Body
+    = Fails
+      <CreateResponse 415 'Expect non empty body to contains JSON and have "Content-Type: application/json" header'>;
+}
+
+
+$ENTRY CreateParametersErrorResponse {
+  t.Actual e.Expected
+    = <CreateErrorResponse 422
+      'Bad action parameters. '
+      'Expected: ' e.Expected ' '
+      'Got: ' <Json-Stringify t.Actual>
+    >
+}
+
+
+$ENTRY CreateErrorResponse {
+  s.Code e.Error
+    = <CreateResponse s.Code
+      (Object
+        (
+          (String 'detail')
+          (String e.Error)
+        )
+      )
+    >
+}
+
+
+$ENTRY CreateResponse {
+  s.Code t.Json
+    = <EncodeHttpResponse
+      s.Code
+      (
+        (('Content-Type') 'application/json')
+        (('Connection') 'close')
+      )
+      <Json-Stringify t.Json>
+    >
+}

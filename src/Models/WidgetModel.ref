@@ -1,0 +1,3 @@
+$ENTRY Widget-WidgetType {
+    (Object e.B ((String 'widget_type') t.WidgetType) e.E) = t.WidgetType;
+}

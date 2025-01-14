@@ -1,25 +1,22 @@
-*$FROM LibraryEx
-$EXTERN Map;
-
-*$FROM Json
-$EXTERN Json-Parse, Json-Stringify;
-
-*$FROM Http
-$EXTERN EncodeHttpResponse;
-
 *$FROM Server
 $EXTERN HttpServer-Create, HttpServer-Run;
 
 *$FROM Storage
 $EXTERN LoadDashboards, DumpDashboards;
 
-*$FROM models/DashboardGetDashboardDigest
-$EXTERN GetDashboardDigest;
+*$FROM Api/GetDashboardsHandler
+$EXTERN GetDashboardsHandler;
+
+*$FROM Api/GetDashboardHandler
+$EXTERN GetDashboardHandler;
+
+*$FROM Api/ApiUtils
+$EXTERN ValidateJsonRequest, CreateErrorResponse;
 
 
 $ENTRY Go {
   , <Prout 'HTTP server is running at http://localhost:6969'> :
-  , <HttpServer-Create (<LoadDashboards>) HandleRequest> : t.Server
+  , <HttpServer-Create <LoadDashboards> HandleRequest> : t.Server
   = <HttpServer-Run t.Server 6969>;
 }
 
@@ -29,7 +26,7 @@ HandleRequest {
     , <ValidateJsonRequest t.Headers e.Body> : {
       Success t.Json
         , <Route t.Ctx t.Method t.URI t.Headers t.Json> : t.NewCtx e.Response
-        , <DumpCtx t.NewCtx> :
+        , <DumpDashboards t.NewCtx> :
         = t.NewCtx e.Response;
 
       Fails e.Response = t.Ctx  e.Response;
@@ -37,74 +34,14 @@ HandleRequest {
 }
 
 
-DumpCtx {
-  (t.Dashboards) = <DumpDashboards t.Dashboards>;
-}
-
-
 Route {
-  t.Dashboards ('POST') ('/get-dashboards') t.Headers t.Json
-    = <Handler-GetDashboards t.Dashboards t.Headers t.Json>;
+  t.Ctx ('POST') ('/get-dashboards') t.Headers t.Json
+    = <GetDashboardsHandler t.Ctx t.Headers t.Json>;
 
-  /* t.Dashboards ('POST') ('/get-dashboard') t.Headers t.Json
-    = <Handler-GetDashboard t.Dashboards t.Headers t.Json>; */
+  t.Ctx ('POST') ('/get-dashboard') t.Headers t.Json
+    = <GetDashboardHandler t.Ctx t.Headers t.Json>;
 
   t.Ctx (e.Method) (e.URI) t.Headers t.Json
     = t.Ctx
-      <CreateResponse 404 (String 'Not Found :(')>;
-}
-
-
-
-Handler-GetDashboards {
-  t.Ctx t.Headers (Object /* empty */)
-    , t.Ctx : ((Array e.Dashboards))
-    = t.Ctx <CreateResponse 200 (Array <Map GetDashboardDigest e.Dashboards>)>;
-
-  t.Ctx t.Headers t.Json
-    = t.Ctx <CreateErrorResponse 400
-      'Bad action parameters.\n'
-      'Got: ' <Json-Stringify t.Json> '\n'
-      'Expected: {}'
-    >;
-}
-
-
-ValidateJsonRequest {
-  (e.Headers-B (('Content-Type') 'application/json') e.Headers-E) e.Body
-    , <Json-Parse e.Body>
-    : {
-      Success t.Json = Success t.Json;
-      Fails e.Error = Fails <CreateErrorResponse 422 'Failed to decode json: ' e.Error>;
-    };
-
-  t.Headers e.Body
-    = Fails
-      <CreateResponse 415 'Expect non empty body to contains JSON and have "Content-Type: application/json" header'>;
-}
-
-
-CreateErrorResponse {
-  s.Code e.Error
-    = <CreateResponse s.Code
-      (Object
-        (
-          (String 'detail')
-          (String e.Error)
-        )
-      )
-    >
-}
-
-
-CreateResponse {
-  s.Code t.Json
-    = <EncodeHttpResponse
-      s.Code
-      (
-        (('Content-Type') 'application/json')
-        (('Connection') 'close')
-      )
-      <Json-Stringify t.Json>
-    >
+      <CreateErrorResponse 404 'Not Found :('>;
 }

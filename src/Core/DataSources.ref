@@ -1,0 +1,138 @@
+*$FROM LibraryEx
+$EXTERN Map;
+
+*$FROM pq
+$EXTERN
+  PQ-ConnectDB,
+  PQ-Status,
+  PQ-ErrorMessage,
+  PQ-Finish,
+  PQ-ExecFetch;
+
+*$FROM Models/DataSourceModel
+$EXTERN
+  DataSource-Host,
+  DataSource-Port,
+  DataSource-Username,
+  DataSource-Password,
+  DataSource-Database;
+
+*$FROM Utils
+$EXTERN TryMap;
+
+
+$ENTRY DataSource-Connect {
+  t.DataSource
+    , <DataSource-ConnInfo t.DataSource> : e.ConnInfo
+    , <PQ-ConnectDB e.ConnInfo> : s.ConnNo
+    , <PQ-Status s.ConnNo> : {
+      0 = Success s.ConnNo;
+      s.Status = Fails <PQ-ErrorMessage s.ConnNo>;
+    }
+}
+
+
+$ENTRY DataSource-FetchQuery {
+  s.ConnNo e.Query
+    , <PQ-ExecFetch s.ConnNo e.Query>
+    : {
+      2 e.Tuples = Success e.Tuples;
+      s.Status = Fails <PQ-ErrorMessage s.ConnNo>;
+    }
+}
+
+
+$ENTRY DataSource-Finish {
+  s.ConnNo = <PQ-Finish s.ConnNo>;
+}
+
+
+$ENTRY DataSource-Extended {
+  s.DataSourceConn t.DataSource
+    = <DataSource-Extended-ExtendTables s.DataSourceConn t.DataSource>;
+}
+
+
+DataSource-Extended-ExtendTables {
+  s.DataSourceConn t.DataSource
+    , <FetchDataSourceTables s.DataSourceConn>
+    : {
+      Success e.TableTuples
+        , <TryMap (datasources_TableFromTuple s.DataSourceConn) e.TableTuples>
+        : {
+          Success e.Tables
+            , t.DataSource : (Object e.DataSourceFields)
+            = Success (Object e.DataSourceFields ((String 'tables') (Array e.Tables)));
+
+          Fails e.Error = Fails e.Error;
+        };
+
+      Fails e.Error = Fails e.Error;
+    }
+}
+
+
+$ENTRY datasources_TableFromTuple {
+  s.DataSourceConn ((e.TableSchema) (e.TableName))
+   , <FetchTableColumns s.DataSourceConn (e.TableSchema) (e.TableName) >
+   : {
+    Success e.ColumnTuples
+      = Success (Object
+          ((String 'name') (String '"' e.TableSchema '"' '.' '"' e.TableName '"'))
+          ((String 'columns') (Array <Map datasource_ColumnFromTuple e.ColumnTuples>))
+        );
+
+    Fails e.Error = Fails e.Error;
+   };
+
+  Fails e.Error = Fails e.Error;
+}
+
+
+$ENTRY datasource_ColumnFromTuple {
+  ((e.ColumnName) (e.ColumnDataType))
+    = (Object
+        ((String 'name') (String e.ColumnName))
+        ((String 'dataType') (String e.ColumnDataType))
+      )
+}
+
+
+DataSource-ConnInfo {
+  t.DataSource
+    , <DataSource-Host t.DataSource> : (String e.Host)
+    , <DataSource-Port t.DataSource> : (Number (e.Port) () ())
+    , <DataSource-Username t.DataSource> : (String e.Username)
+    , <DataSource-Password t.DataSource> : (String e.Password)
+    , <DataSource-Database t.DataSource> : (String e.Database)
+    = 'host=' e.Host ' '
+      'port=' <Symb e.Port> ' '
+      'user=' e.Username ' '
+      'password=' e.Password ' '
+      'dbname=' e.Database
+}
+
+
+FetchDataSourceTables {
+  s.DataSourceConn
+    = <DataSource-FetchQuery s.DataSourceConn
+        'SELECT nspname AS table_schema, relname AS table_name '
+        'FROM pg_class '
+        'JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace '
+        'LEFT JOIN pg_inherits ON pg_class.oid = pg_inherits.inhrelid '
+        'WHERE pg_inherits.inhrelid IS NULL '
+        '  AND relkind IN (\'r\', \'v\') '
+        '  AND nspname NOT IN (\'pg_catalog\', \'information_schema\') '
+      >
+}
+
+
+FetchTableColumns {
+  s.DataSourceConn (e.TableSchema) (e.TableName)
+    = <DataSource-FetchQuery s.DataSourceConn
+        'SELECT column_name, data_type '
+        'FROM information_schema.columns '
+        'WHERE table_name = \'' e.TableName '\' '
+        'AND table_schema = \'' e.TableSchema '\'; '
+      >
+}

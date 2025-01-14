@@ -1,0 +1,23 @@
+$ENTRY DataSource-Host {
+  (Object e.B ((String 'host') t.Host) e.E) = t.Host;
+}
+
+
+$ENTRY DataSource-Port {
+  (Object e.B ((String 'port') t.Port) e.E) = t.Port;
+}
+
+
+$ENTRY DataSource-Username {
+  (Object e.B ((String 'username') t.Username) e.E) = t.Username;
+}
+
+
+$ENTRY DataSource-Password {
+  (Object e.B ((String 'password') t.Password) e.E) = t.Password;
+}
+
+
+$ENTRY DataSource-Database {
+  (Object e.B ((String 'database') t.Database) e.E) = t.Database;
+}

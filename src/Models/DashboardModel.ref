@@ -1,0 +1,49 @@
+$ENTRY GetDashboardDigest {
+  t.Dashboard
+    = (Object
+      ((String 'dashboard_id') <Dashboard-Id t.Dashboard>)
+      ((String 'title') <Dashboard-Title t.Dashboard>)
+    );
+}
+
+
+$ENTRY Dashboard-Id {
+* get
+  (Object e.B ((String 'dashboard_id') t.Id) e.E) = t.Id;
+}
+
+
+$ENTRY Dashboard-Title {
+* get
+  (Object e.B ((String 'title') t.Title) e.E) = t.Title;
+}
+
+
+$ENTRY Dashboard-Widgets {
+* get
+  (Object e.B ((String 'widgets') t.Widgets) e.E) = t.Widgets;
+* set
+  (Object e.B ((String 'widgets') t.Widgets) e.E) t.NewWidgets
+    = (Object e.B ((String 'widgets') t.NewWidgets) e.E);
+}
+
+
+$ENTRY Dashboard-DataSource {
+* get
+  (Object e.B ((String 'dataSource') t.DataSource) e.E) = t.DataSource;
+* set
+  (Object e.B ((String 'dataSource') t.DataSource) e.E) t.NewDataSource
+    = (Object e.B ((String 'dataSource') t.NewDataSource) e.E);
+}
+
+
+$ENTRY FindDashboardById {
+  (Array t.Dashboard e.Dashboards) t.Id
+    , <Dashboard-Id t.Dashboard> : t.Id
+    = t.Dashboard;
+
+  (Array t.Dashboard e.Dashboards) t.Id
+    = <FindDashboardById (Array e.Dashboards) t.Id>;
+
+  (Array /* empty */) t.Id = /* empty */;
+}

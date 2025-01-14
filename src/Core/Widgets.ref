@@ -1,0 +1,25 @@
+*$FROM Models/WidgetModel
+$EXTERN Widget-WidgetType;
+
+
+$ENTRY Widget-Extended {
+  s.DataSourceConn t.Widget
+    , <FetchWidgetData s.DataSourceConn t.Widget>
+    : {
+      Success t.WidgetData
+        , t.Widget : (Object e.WidgetFields)
+        = Success (Object e.WidgetFields ((String 'data') t.WidgetData));
+
+      Fails e.Error = Fails e.Error;
+    }
+}
+
+
+FetchWidgetData {
+  s.DataSourceConn t.Widget
+    , <Widget-WidgetType t.Widget>
+    : {
+      (String 'PieChart') = Success (Array );
+      (String 'Histogram') = Success (Array );
+    }
+}

@@ -1,0 +1,28 @@
+*$FROM Api/ApiUtils
+$EXTERN CreateResponse, CreateErrorResponse, CreateParametersErrorResponse;
+
+*$FROM Core/Dashboards
+$EXTERN Dashboard-Extended;
+
+*$FROM Models/DashboardModel
+$EXTERN FindDashboardById;
+
+
+$ENTRY GetDashboardHandler {
+  t.Ctx t.Headers
+  (Object ((String 'dashboard_id') t.Id))
+    , <FindDashboardById t.Ctx t.Id> : {
+      /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+
+      t.Dashboard
+        , <Dashboard-Extended t.Dashboard>
+        : {
+          Success t.ExtendedDashboard = t.Ctx <CreateResponse 200 t.ExtendedDashboard>;
+          Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+        };
+    };
+
+  t.Ctx t.Headers t.Json
+    = t.Ctx <CreateParametersErrorResponse t.Json '{ dashboard_id: integer }'>;
+}
+
