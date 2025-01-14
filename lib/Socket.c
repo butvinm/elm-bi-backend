@@ -49,6 +49,14 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Open, "Socket-Open") {
   if (socket_fd < 0) {
     r05_builtin_error_errno("Failed to open socket");
   }
+
+  int opt = 1;
+  if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+      perror("[ERROR] setsockopt failed");
+      close(socket_fd);
+      exit(EXIT_FAILURE);
+  }
+
   s_sockets[socket_no] = socket_fd;
 
   r05_splice_to_freelist(arg_begin, arg_end);
