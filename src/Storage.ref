@@ -9,7 +9,7 @@ $EXTERN UnBracket;
 
 
 $ENTRY LoadDashboards {
-  , <Json-Parse <UnBracket <LoadFile <GetEnv 'ELM_BI_STORAGE_FILE'>>>>
+  , <Json-Parse <UnBracket <LoadFile <StorageFile>>>>
   : {
     Success (Array e.Dashboards) = Success (Array e.Dashboards);
     Success e.Wtf = Fails 'Storage contains unexpected data: ' e.Wtf;
@@ -19,5 +19,10 @@ $ENTRY LoadDashboards {
 
 
 $ENTRY DumpDashboards {
-  t.Dashboards = <SaveFile (<GetEnv 'ELM_BI_STORAGE_FILE'>) (<Json-Stringify t.Dashboards>)>
+  t.Dashboards = <SaveFile (<StorageFile>) (<Json-Stringify t.Dashboards>)>
+}
+
+
+StorageFile {
+  = 'storage.json';
 }
