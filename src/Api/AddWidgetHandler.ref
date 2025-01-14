@@ -6,7 +6,7 @@ $EXTERN Dashboard-Extended;
 
 *$FROM Models/DashboardModel
 $EXTERN
-  Dashboard-Widgets,
+  Dashboard-InsertWidget,
   FindDashboardById,
   InsertDashboard,
   GenerateId;
@@ -40,8 +40,7 @@ $ENTRY AddWidgetHandler {
           t.DataColumn
         >
         : t.CreatedWidget
-        , <Dashboard-Widgets t.Dashboard> : (Array e.Widgets)
-        , <Dashboard-Widgets t.Dashboard (Array e.Widgets t.CreatedWidget)> : t.UpdatedDashboard
+        , <Dashboard-InsertWidget t.Dashboard t.CreatedWidget> : t.UpdatedDashboard
         , <Dashboard-Extended t.UpdatedDashboard>
         : {
           Success t.ExtendedDashboard

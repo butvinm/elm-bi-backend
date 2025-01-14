@@ -1,3 +1,7 @@
+*$FROM Models/Widget
+$EXTERN Widget-Id;
+
+
 $ENTRY Dashboard {
   t.Id t.Title t.Widgets t.DataSource
     = (Object
@@ -65,6 +69,51 @@ $ENTRY Dashboard-Digest {
 }
 
 
+
+$ENTRY Dashboard-InsertWidget {
+  t.Dashboard t.Widget
+    , <Dashboard-Widgets t.Dashboard> : (Array e.Widgets)
+    = <Dashboard-Widgets t.Dashboard (Array e.Widgets t.Widget)>;
+}
+
+
+$ENTRY Dashboard-FindWidgetById {
+  t.Dashboard t.Id = <Do-Dashboard-FindWidgetById t.Id <Dashboard-Widgets t.Dashboard>>;
+}
+
+
+Do-Dashboard-FindWidgetById {
+  t.Id (Array t.Widget e.Widgets)
+    , <Widget-Id t.Widget> : t.Id
+    = t.Widget;
+
+  t.Id (Array t.Widget e.Widgets)
+    = <Do-Dashboard-FindWidgetById t.Id (Array e.Widgets)>;
+
+  t.Id (Array /* empty */) = /* empty */;
+}
+
+
+$ENTRY Dashboard-DeleteWidgetById {
+  t.Dashboard t.Id
+    , <Do-Dashboard-DeleteWidgetById () <Dashboard-Widgets t.Dashboard> t.Id> : t.NewWidgets
+    = <Dashboard-Widgets t.Dashboard t.NewWidgets>;
+}
+
+
+Do-Dashboard-DeleteWidgetById {
+  (e.Passed) (Array t.Widget e.Widgets) t.Id
+    , <Widget-Id t.Widget> : t.Id
+    = (Array e.Passed e.Widgets);
+
+  (e.Passed) (Array t.Widget e.Widgets) t.Id
+    = <Do-Dashboard-DeleteWidgetById (e.Passed t.Widget) (Array e.Widgets) t.Id>;
+
+  (e.Passed) (Array /* empty */) t.Id
+    = (Array e.Passed);
+}
+
+
 $ENTRY FindDashboardById {
   (Array t.Dashboard e.Dashboards) t.Id
     , <Dashboard-Id t.Dashboard> : t.Id
@@ -110,7 +159,6 @@ Do-InsertDashboard {
   (e.Passed) (Array /* empty */) t.Id t.NewDashboard
     = (Array e.Passed t.NewDashboard);
 }
-
 
 $ENTRY GenerateId {
   = (Number (<RandomDigit 666>) () ());

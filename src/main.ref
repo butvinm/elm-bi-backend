@@ -22,6 +22,9 @@ $EXTERN CreateDashboardHandler;
 *$FROM Api/AddWidgetHandler
 $EXTERN AddWidgetHandler;
 
+*$FROM Api/DeleteWidgetHandler
+$EXTERN DeleteWidgetHandler;
+
 *$FROM Api/ApiUtils
 $EXTERN ValidateJsonRequest, CreateErrorResponse;
 
@@ -64,6 +67,9 @@ Route {
 
   t.Ctx ('POST') ('/add-widget') t.Headers t.Json
     = <AddWidgetHandler t.Ctx t.Headers t.Json>;
+
+  t.Ctx ('POST') ('/delete-widget') t.Headers t.Json
+    = <DeleteWidgetHandler t.Ctx t.Headers t.Json>;
 
   t.Ctx (e.Method) (e.URI) t.Headers t.Json
     = t.Ctx
