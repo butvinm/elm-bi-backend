@@ -112,6 +112,6 @@ Do-InsertDashboard {
 }
 
 
-$ENTRY GenerateDashboardId {
+$ENTRY GenerateId {
   = (Number (<RandomDigit 666>) () ());
 }

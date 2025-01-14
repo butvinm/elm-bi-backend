@@ -1,0 +1,75 @@
+*$FROM Api/ApiUtils
+$EXTERN CreateResponse, CreateErrorResponse, CreateParametersErrorResponse;
+
+*$FROM Core/Dashboards
+$EXTERN Dashboard-Extended;
+
+*$FROM Models/DashboardModel
+$EXTERN
+  Dashboard-Widgets,
+  FindDashboardById,
+  InsertDashboard,
+  GenerateId;
+
+*$FROM Models/Widget
+$EXTERN Widget,
+  Widget-Title,
+  Widget-WidgetType,
+  Widget-Table,
+  Widget-DataColumn;
+
+
+$ENTRY AddWidgetHandler {
+  t.Ctx t.Headers
+  t.CreateWidget
+    , <CreateWidget-DashboardId t.CreateWidget> : t.DashboardId
+    , <CreateWidget-Widget t.CreateWidget> : t.Widget
+    , <Widget-Title t.Widget> : t.Title
+    , <Widget-WidgetType t.Widget> : t.WidgetType
+    , <Widget-Table t.Widget> : t.Table
+    , <Widget-DataColumn t.Widget> : t.DataColumn
+    , <FindDashboardById t.Ctx t.DashboardId> : {
+      /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+
+      t.Dashboard
+        , <Widget
+          <GenerateId>
+          t.WidgetType
+          t.Title
+          t.Table
+          t.DataColumn
+        >
+        : t.CreatedWidget
+        , <Dashboard-Widgets t.Dashboard> : (Array e.Widgets)
+        , <Dashboard-Widgets t.Dashboard (Array e.Widgets t.CreatedWidget)> : t.UpdatedDashboard
+        , <Dashboard-Extended t.UpdatedDashboard>
+        : {
+          Success t.ExtendedDashboard
+            , <InsertDashboard t.Ctx t.DashboardId t.UpdatedDashboard> : t.UpdatedDashboards
+            = t.UpdatedDashboards <CreateResponse 200 t.ExtendedDashboard>;
+
+          Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+        };
+    };
+
+  t.Ctx t.Headers t.Json
+    = t.Ctx
+      <CreateParametersErrorResponse
+        t.Json
+        '{ dashboard_id: integer, widget: { title: string, widget_type: "PieChart"|"Histogram", table: string, data_column: string } }'
+      >;
+}
+
+
+CreateWidget-DashboardId {
+  (Object e.B ((String 'dashboard_id') t.DashboardId) e.E) = t.DashboardId;
+
+  (Object e.B) = /* empty */;
+}
+
+
+CreateWidget-Widget {
+  (Object e.B ((String 'widget') t.Widget) e.E) = t.Widget;
+
+  (Object e.B) = /* empty */;
+}

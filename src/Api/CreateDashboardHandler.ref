@@ -9,7 +9,7 @@ $EXTERN
   Dashboard,
   Dashboard-Title,
   Dashboard-DataSource,
-  GenerateDashboardId,
+  GenerateId,
   InsertDashboard;
 
 
@@ -18,7 +18,7 @@ $ENTRY CreateDashboardHandler {
   t.DashboardCreate
     , <Dashboard-Title t.DashboardCreate> : t.Title
     , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
-    , <GenerateDashboardId> : t.Id
+    , <GenerateId> : t.Id
     , <Dashboard
         t.Id
         t.Title

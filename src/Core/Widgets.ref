@@ -28,6 +28,7 @@ FetchWidgetData {
     : {
       (String 'PieChart') = <FetchPieChartData s.DataSourceConn t.Widget>;
       (String 'Histogram') = <FetchHistogramData s.DataSourceConn t.Widget>;
+      (String e.Unsupported) = Fails 'Unsupported widget type: ' e.Unsupported;
     }
 }
 
