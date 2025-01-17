@@ -9,9 +9,9 @@ $ENTRY ValidateJsonRequest {
   (e.Headers-B (('Content-Type') 'application/json') e.Headers-E) e.Body
     , <Json-Parse e.Body>
     : {
-      Success t.Json = Success t.Json;
-      Fails e.Error = Fails <CreateErrorResponse 422 'Failed to decode json: ' e.Error>;
-    };
+        Success t.Json = Success t.Json;
+        Fails e.Error = Fails <CreateErrorResponse 422 'Failed to decode json: ' e.Error>;
+      };
 
   t.Headers e.Body
     = Fails
@@ -27,38 +27,38 @@ $ENTRY CreateOptionsResponse {
 $ENTRY CreateParametersErrorResponse {
   t.Actual e.Expected
     = <CreateErrorResponse 422
-      'Bad action parameters. '
-      'Expected: ' e.Expected ' '
-      'Got: ' <Json-Stringify t.Actual>
-    >
+        'Bad action parameters. '
+        'Expected: ' e.Expected ' '
+        'Got: ' <Json-Stringify t.Actual>
+      >
 }
 
 
 $ENTRY CreateErrorResponse {
   s.Code e.Error
     = <CreateResponse s.Code
-      (Object
-        (
-          (String 'detail')
-          (String e.Error)
+        (Object
+          (
+            (String 'detail')
+            (String e.Error)
+          )
         )
-      )
-    >
+      >
 }
 
 
 $ENTRY CreateResponse {
   s.Code t.Json
     = <EncodeHttpResponse
-      s.Code
-      (
-        (('Content-Type') 'application/json')
-        (('Connection') 'close')
-        (('Access-Control-Allow-Origin') '*')
-        (('Access-Control-Allow-Methods') 'GET, POST, PUT, DELETE, OPTIONS')
-        (('Access-Control-Allow-Headers') 'Content-Type, Authorization, X-Requested-With')
-        (('Access-Control-Max-Age') '86400')
-      )
-      <Json-Stringify t.Json>
-    >
+        s.Code
+        (
+          (('Content-Type') 'application/json')
+          (('Connection') 'close')
+          (('Access-Control-Allow-Origin') '*')
+          (('Access-Control-Allow-Methods') 'GET, POST, PUT, DELETE, OPTIONS')
+          (('Access-Control-Allow-Headers') 'Content-Type, Authorization, X-Requested-With')
+          (('Access-Control-Max-Age') '86400')
+        )
+        <Json-Stringify t.Json>
+      >
 }

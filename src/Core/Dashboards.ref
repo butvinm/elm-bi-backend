@@ -15,22 +15,15 @@ $ENTRY Dashboard-Extended {
   t.Dashboard
     , <DataSource-Connect <Dashboard-DataSource t.Dashboard>>
     : {
-      Success s.DataSourceConn
-        , <Dashboard-Extended-ExtendWidgets s.DataSourceConn t.Dashboard>
-        : {
-          Success t.DashboardExtended
-            , <DataSource-Finish s.DataSourceConn> :
-            = Success t.DashboardExtended;
+        Success s.DataSourceConn
+          , <Dashboard-Extended-ExtendWidgets s.DataSourceConn t.Dashboard> : e.DashboardExtended
+          , <DataSource-Finish s.DataSourceConn> : /* empty */
+          = e.DashboardExtended;
 
-          Fails e.Errors
-            , <DataSource-Finish s.DataSourceConn> :
-            = Fails e.Errors;
-        };
-
-      Fails s.DataSourceConn e.Errors
-        , <DataSource-Finish s.DataSourceConn> :
-        = Fails e.Errors;
-    }
+        Fails s.DataSourceConn e.Errors
+          , <DataSource-Finish s.DataSourceConn> : /* empty */
+          = Fails e.Errors;
+      }
 }
 
 
@@ -39,14 +32,14 @@ Dashboard-Extended-ExtendWidgets {
     , <Dashboard-Widgets t.Dashboard> : (Array e.Widgets)
     , <TryMap (Widget-Extended s.DataSourceConn) e.Widgets>
     : {
-      Success e.WidgetsExtended
-        = <Dashboard-Extended-ExtendDataSource
-          s.DataSourceConn
-          <Dashboard-Widgets t.Dashboard (Array e.WidgetsExtended)>
-        >;
+        Success e.WidgetsExtended
+          = <Dashboard-Extended-ExtendDataSource
+              s.DataSourceConn
+              <Dashboard-Widgets t.Dashboard (Array e.WidgetsExtended)>
+            >;
 
-      Fails e.Errors = Fails e.Errors;
-    }
+        Fails e.Errors = Fails e.Errors;
+      }
 }
 
 
@@ -54,9 +47,9 @@ Dashboard-Extended-ExtendDataSource {
   s.DataSourceConn t.Dashboard
     , <DataSource-Extended s.DataSourceConn <Dashboard-DataSource t.Dashboard>>
     : {
-      Success t.DataSourceExtended
-        = Success <Dashboard-DataSource t.Dashboard t.DataSourceExtended>;
+        Success t.DataSourceExtended
+          = Success <Dashboard-DataSource t.Dashboard t.DataSourceExtended>;
 
-      Fails e.Errors = Fails e.Errors;
-    }
+        Fails e.Errors = Fails e.Errors;
+      }
 }

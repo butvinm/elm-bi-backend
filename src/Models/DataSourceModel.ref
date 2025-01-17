@@ -1,12 +1,12 @@
 $ENTRY DataSource {
   t.Host t.Port t.Username t.Password t.Database
     = (Object
-      ((String 'host') t.Host)
-      ((String 'port') t.Port)
-      ((String 'username') t.Username)
-      ((String 'password') t.Password)
-      ((String 'database') t.Database)
-    );
+        ((String 'host') t.Host)
+        ((String 'port') t.Port)
+        ((String 'username') t.Username)
+        ((String 'password') t.Password)
+        ((String 'database') t.Database)
+      )
 }
 
 
@@ -89,9 +89,9 @@ $ENTRY DataSource-Tables {
 $ENTRY Table {
   t.Name t.Columns
     = (Object
-      ((String 'name') t.Name)
-      ((String 'columns') t.Columns)
-    )
+        ((String 'name') t.Name)
+        ((String 'columns') t.Columns)
+      )
 }
 
 
@@ -122,9 +122,9 @@ $ENTRY Table-Columns {
 $ENTRY Column {
   t.Name t.DataType
     = (Object
-      ((String 'name') t.Name)
-      ((String 'dataType') t.DataType)
-    )
+        ((String 'name') t.Name)
+        ((String 'dataType') t.DataType)
+      )
 }
 
 

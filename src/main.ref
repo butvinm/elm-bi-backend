@@ -33,14 +33,14 @@ $ENTRY Go {
   , <Prout 'HTTP server is running at http://localhost:6969'> :
   , <LoadDashboards>
   : {
-    Success t.Dashboards
-      , <HttpServer-Create t.Dashboards HandleRequest> : t.Server
-      = <HttpServer-Run t.Server 6969>;
+      Success t.Dashboards
+        , <HttpServer-Create t.Dashboards HandleRequest> : t.Server
+        = <HttpServer-Run t.Server 6969>;
 
-    Fails e.Error
-      , <Prout e.Error> :
-      = <Exit 1>;
-  }
+      Fails e.Error
+        , <Prout e.Error> :
+        = <Exit 1>;
+    }
 }
 
 
@@ -49,14 +49,15 @@ HandleRequest {
     = t.Ctx <CreateOptionsResponse>;
 
   t.Ctx t.Method t.URI t.Headers e.Body
-    , <ValidateJsonRequest t.Headers e.Body> : {
-      Success t.Json
-        , <Route t.Ctx t.Method t.URI t.Headers t.Json> : t.NewCtx e.Response
-        , <DumpDashboards t.NewCtx> :
-        = t.NewCtx e.Response;
+    , <ValidateJsonRequest t.Headers e.Body>
+    : {
+        Success t.Json
+          , <Route t.Ctx t.Method t.URI t.Headers t.Json> : t.NewCtx e.Response
+          , <DumpDashboards t.NewCtx> :
+          = t.NewCtx e.Response;
 
-      Fails e.Response = t.Ctx  e.Response;
-    }
+        Fails e.Response = t.Ctx  e.Response;
+      }
 }
 
 

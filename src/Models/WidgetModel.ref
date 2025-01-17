@@ -1,12 +1,12 @@
 $ENTRY Widget {
   t.Id t.WidgetType t.Title t.Table t.DataColumn
     = (Object
-      ((String 'widget_id') t.Id)
-      ((String 'widget_type') t.WidgetType)
-      ((String 'title') t.Title)
-      ((String 'table') t.Table)
-      ((String 'data_column') t.DataColumn)
-    )
+        ((String 'widget_id') t.Id)
+        ((String 'widget_type') t.WidgetType)
+        ((String 'title') t.Title)
+        ((String 'table') t.Table)
+        ((String 'data_column') t.DataColumn)
+      )
 }
 
 

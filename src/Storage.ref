@@ -11,10 +11,10 @@ $EXTERN UnBracket;
 $ENTRY LoadDashboards {
   , <Json-Parse <UnBracket <LoadFile <StorageFile>>>>
   : {
-    Success (Array e.Dashboards) = Success (Array e.Dashboards);
-    Success e.Wtf = Fails 'Storage contains unexpected data: ' e.Wtf;
-    Fails e.Error = Fails 'Failed to parse storage file: ' e.Error;
-  }
+      Success (Array e.Dashboards) = Success (Array e.Dashboards);
+      Success e.Wtf = Fails 'Storage contains unexpected data: ' e.Wtf;
+      Fails e.Error = Fails 'Failed to parse storage file: ' e.Error;
+    }
 }
 
 

@@ -15,10 +15,10 @@ $ENTRY Widget-Extended {
   s.DataSourceConn t.Widget
     , <FetchWidgetData s.DataSourceConn t.Widget>
     : {
-      Success t.Data = Success <Widget-Data t.Widget t.Data>;
+        Success t.Data = Success <Widget-Data t.Widget t.Data>;
 
-      Fails e.Error = Fails e.Error;
-    }
+        Fails e.Error = Fails e.Error;
+      }
 }
 
 
@@ -26,10 +26,10 @@ FetchWidgetData {
   s.DataSourceConn t.Widget
     , <Widget-WidgetType t.Widget>
     : {
-      (String 'PieChart') = <FetchPieChartData s.DataSourceConn t.Widget>;
-      (String 'Histogram') = <FetchHistogramData s.DataSourceConn t.Widget>;
-      (String e.Unsupported) = Fails 'Unsupported widget type: ' e.Unsupported;
-    }
+        (String 'PieChart') = <FetchPieChartData s.DataSourceConn t.Widget>;
+        (String 'Histogram') = <FetchHistogramData s.DataSourceConn t.Widget>;
+        (String e.Unsupported) = Fails 'Unsupported widget type: ' e.Unsupported;
+      }
 }
 
 
@@ -38,25 +38,25 @@ FetchPieChartData {
     , <Widget-Table t.Widget> : (String e.Table)
     , <Widget-DataColumn t.Widget> : (String e.DataColumn)
     , <DataSource-FetchQuery s.DataSourceConn
-      'SELECT '
-        e.DataColumn ', '
-        'COUNT(' e.DataColumn ') '
-      'FROM ' e.Table ' '
-      'GROUP BY ' e.DataColumn
-    >
+        'SELECT '
+          e.DataColumn ', '
+          'COUNT(' e.DataColumn ') '
+        'FROM ' e.Table ' '
+        'GROUP BY ' e.DataColumn
+      >
     : {
-      Success e.Tuples = Success (Array <Map widgets_PieChartDatumFromTuple e.Tuples>);
-      Fails e.Error = Fails e.Error;
-    }
+        Success e.Tuples = Success (Array <Map widgets_PieChartDatumFromTuple e.Tuples>);
+        Fails e.Error = Fails e.Error;
+      }
 }
 
 
 $ENTRY widgets_PieChartDatumFromTuple {
   ((e.Title) (e.Count))
     = (Object
-      ((String 'title') (String e.Title))
-      ((String 'count') (Number (<Numb e.Count>) () ()))
-    )
+        ((String 'title') (String e.Title))
+        ((String 'count') (Number (<Numb e.Count>) () ()))
+      )
 }
 
 
@@ -66,15 +66,15 @@ FetchHistogramData {
     , <Widget-DataColumn t.Widget> : (String e.DataColumn)
     , <DataSource-FetchQuery s.DataSourceConn 'SELECT ' e.DataColumn ' FROM ' e.Table>
     : {
-      Success e.Tuples
-        , <TryMap widgets_HistogramDatumFromTuple e.Tuples>
-        : {
-          Success e.Values = Success (Array e.Values);
-          Fails e.Error = Fails 'Histogram can only use numerical data';
-        };
+        Success e.Tuples
+          , <TryMap widgets_HistogramDatumFromTuple e.Tuples>
+          : {
+              Success e.Values = Success (Array e.Values);
+              Fails e.Error = Fails 'Histogram can only use numerical data';
+            };
 
-      Fails e.Error = Fails e.Error;
-    }
+        Fails e.Error = Fails e.Error;
+      }
 }
 
 

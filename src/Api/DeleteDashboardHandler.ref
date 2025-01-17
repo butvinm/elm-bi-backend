@@ -11,13 +11,14 @@ $EXTERN Dashboard-Digest, FindDashboardById, DeleteDashboardById;
 $ENTRY DeleteDashboardHandler {
   t.Ctx t.Headers
   (Object ((String 'dashboard_id') t.Id))
-    , <FindDashboardById t.Ctx t.Id> : {
-      /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+    , <FindDashboardById t.Ctx t.Id>
+    : {
+        t.Dashboard
+          , <DeleteDashboardById t.Ctx t.Id> : (Array e.UpdatedDashboards)
+          = (Array e.UpdatedDashboards) <CreateResponse 200 (Array <Map Dashboard-Digest e.UpdatedDashboards>)>;
 
-      t.Dashboard
-        , <DeleteDashboardById t.Ctx t.Id> : (Array e.UpdatedDashboards)
-        = (Array e.UpdatedDashboards) <CreateResponse 200 (Array <Map Dashboard-Digest e.UpdatedDashboards>)>;
-    };
+        /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+      };
 
   t.Ctx t.Headers t.Json
     = t.Ctx <CreateParametersErrorResponse t.Json '{ dashboard_id: integer }'>;

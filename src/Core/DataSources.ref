@@ -28,11 +28,11 @@ $ENTRY DataSource-Connect {
   t.DataSource
     , <DataSource-ConnInfo t.DataSource> : e.ConnInfo
     , <PQ-ConnectDB e.ConnInfo> : s.ConnNo
-    , <PQ-Status s.ConnNo> : {
-      0 = Success s.ConnNo;
-
-      s.Status = Fails s.ConnNo <PQ-ErrorMessage s.ConnNo>;
-    }
+    , <PQ-Status s.ConnNo>
+    : {
+        0 = Success s.ConnNo;
+        s.Status = Fails s.ConnNo <PQ-ErrorMessage s.ConnNo>;
+      }
 }
 
 
@@ -40,20 +40,20 @@ $ENTRY DataSource-FetchQuery {
   s.ConnNo e.Query
     , <PQ-ExecFetch s.ConnNo e.Query>
     : {
-      2 e.Tuples = Success e.Tuples;
-      s.Status = Fails <PQ-ErrorMessage s.ConnNo>;
-    }
+        2 e.Tuples = Success e.Tuples;
+        s.Status = Fails <PQ-ErrorMessage s.ConnNo>;
+      }
 }
 
 
 $ENTRY DataSource-Finish {
-  s.ConnNo = <PQ-Finish s.ConnNo>;
+  s.ConnNo = <PQ-Finish s.ConnNo>
 }
 
 
 $ENTRY DataSource-Extended {
   s.DataSourceConn t.DataSource
-    = <DataSource-Extended-ExtendTables s.DataSourceConn t.DataSource>;
+    = <DataSource-Extended-ExtendTables s.DataSourceConn t.DataSource>
 }
 
 
@@ -64,11 +64,11 @@ DataSource-Extended-ExtendTables {
       Success e.TableTuples
         , <TryMap (datasources_TableFromTuple s.DataSourceConn) e.TableTuples>
         : {
-          Success e.Tables
-            = Success <DataSource-Tables t.DataSource (Array e.Tables)>;
+            Success e.Tables
+              = Success <DataSource-Tables t.DataSource (Array e.Tables)>;
 
-          Fails e.Error = Fails e.Error;
-        };
+            Fails e.Error = Fails e.Error;
+          };
 
       Fails e.Error = Fails e.Error;
     }
@@ -77,17 +77,17 @@ DataSource-Extended-ExtendTables {
 
 $ENTRY datasources_TableFromTuple {
   s.DataSourceConn ((e.TableSchema) (e.TableName))
-   , <FetchTableColumns s.DataSourceConn (e.TableSchema) (e.TableName) >
+   , <FetchTableColumns s.DataSourceConn (e.TableSchema) (e.TableName)>
    : {
-    Success e.ColumnTuples
-      = Success
-        <Table
-          (String '"' e.TableSchema '"' '.' '"' e.TableName '"')
-          (Array <Map datasource_ColumnFromTuple e.ColumnTuples>)
-        >;
+       Success e.ColumnTuples
+        = Success
+          <Table
+            (String '"' e.TableSchema '"' '.' '"' e.TableName '"')
+            (Array <Map datasource_ColumnFromTuple e.ColumnTuples>)
+          >;
 
-    Fails e.Error = Fails e.Error;
-   };
+       Fails e.Error = Fails e.Error;
+     };
 
   Fails e.Error = Fails e.Error;
 }

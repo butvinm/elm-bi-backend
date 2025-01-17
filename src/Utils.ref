@@ -17,9 +17,9 @@ Do-TryMap {
   (e.MappedItems) t.Func t.Item e.Items
     , <Apply t.Func t.Item>
     : {
-      Success t.MappedItem = <Do-TryMap (e.MappedItems t.MappedItem) t.Func e.Items>;
-      Fails e.Error = Fails e.Error;
-    };
+        Success t.MappedItem = <Do-TryMap (e.MappedItems t.MappedItem) t.Func e.Items>;
+        Fails e.Error = Fails e.Error;
+      };
 
   (e.MappedItems) t.Func /* empty */ = Success e.MappedItems;
 }

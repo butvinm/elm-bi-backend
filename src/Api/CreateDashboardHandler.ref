@@ -19,21 +19,16 @@ $ENTRY CreateDashboardHandler {
     , <Dashboard-Title t.DashboardCreate> : t.Title
     , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
     , <GenerateId> : t.Id
-    , <Dashboard
-        t.Id
-        t.Title
-        (Array )
-        t.DataSource
-      >
+    , <Dashboard t.Id t.Title (Array ) t.DataSource>
     : t.CreatedDashboard
     , <Dashboard-Extended t.CreatedDashboard>
     : {
-      Success t.ExtendedDashboard
-        , <InsertDashboard t.Ctx t.Id t.CreatedDashboard> : t.UpdatedDashboards
-        = t.UpdatedDashboards <CreateResponse 201 t.ExtendedDashboard>;
+        Success t.ExtendedDashboard
+          , <InsertDashboard t.Ctx t.Id t.CreatedDashboard> : t.UpdatedDashboards
+          = t.UpdatedDashboards <CreateResponse 201 t.ExtendedDashboard>;
 
-      Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
-    };
+        Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+      };
 
   t.Ctx t.Headers t.Json
     = t.Ctx

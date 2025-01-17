@@ -63,9 +63,9 @@ $ENTRY Dashboard-DataSource {
 $ENTRY Dashboard-Digest {
   t.Dashboard
     = (Object
-      ((String 'dashboard_id') <Dashboard-Id t.Dashboard>)
-      ((String 'title') <Dashboard-Title t.Dashboard>)
-    );
+        ((String 'dashboard_id') <Dashboard-Id t.Dashboard>)
+        ((String 'title') <Dashboard-Title t.Dashboard>)
+      )
 }
 
 

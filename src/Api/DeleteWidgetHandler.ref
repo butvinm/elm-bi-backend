@@ -18,24 +18,24 @@ $ENTRY DeleteWidgetHandler {
     , <DeleteWidget-DashboardId t.DeleteWidget> : t.DashboardId
     , <DeleteWidget-WidgetId t.DeleteWidget> : t.WidgetId
     , <FindDashboardById t.Ctx t.DashboardId> : {
-      /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
-
       t.Dashboard
         , <Dashboard-FindWidgetById t.Dashboard t.WidgetId>
         : {
-          /* empty */ = t.Ctx <CreateErrorResponse 404 'Widget not found'>;
+            t.Widget
+              , <Dashboard-DeleteWidgetById t.Dashboard t.WidgetId> : t.UpdatedDashboard
+              , <Dashboard-Extended t.UpdatedDashboard>
+              : {
+                  Success t.ExtendedDashboard
+                    , <InsertDashboard t.Ctx t.DashboardId t.UpdatedDashboard> : t.UpdatedDashboards
+                    = t.UpdatedDashboards <CreateResponse 200 t.ExtendedDashboard>;
 
-          t.Widget
-            , <Dashboard-DeleteWidgetById t.Dashboard t.WidgetId> : t.UpdatedDashboard
-            , <Dashboard-Extended t.UpdatedDashboard>
-            : {
-              Success t.ExtendedDashboard
-                , <InsertDashboard t.Ctx t.DashboardId t.UpdatedDashboard> : t.UpdatedDashboards
-                = t.UpdatedDashboards <CreateResponse 200 t.ExtendedDashboard>;
+                  Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+                };
 
-              Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
-            };
-        };
+            /* empty */ = t.Ctx <CreateErrorResponse 404 'Widget not found'>;
+          };
+
+        /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
     };
 
   t.Ctx t.Headers t.Json
