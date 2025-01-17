@@ -1,3 +1,5 @@
+.hypothesis/
 build/
 **/__pycache__/
 venv/
+storage.json

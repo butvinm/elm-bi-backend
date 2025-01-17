@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -ex
 shopt -s globstar
 
