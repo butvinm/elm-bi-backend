@@ -21,35 +21,37 @@ $EXTERN Widget,
 
 $ENTRY AddWidgetHandler {
   t.Ctx t.CreateWidget
+    , t.CreateWidget : (Object e.Object)
     , <CreateWidget-DashboardId t.CreateWidget> : t.DashboardId
     , <CreateWidget-Widget t.CreateWidget> : t.Widget
     , <Widget-Title t.Widget> : t.Title
     , <Widget-WidgetType t.Widget> : t.WidgetType
     , <Widget-Table t.Widget> : t.Table
     , <Widget-DataColumn t.Widget> : t.DataColumn
-    , <FindDashboardById t.Ctx t.DashboardId> : {
-      t.Dashboard
-        , <Widget
-            <GenerateId>
-            t.WidgetType
-            t.Title
-            t.Table
-            t.DataColumn
-          >
-        : t.CreatedWidget
-        , <Dashboard-InsertWidget t.Dashboard t.CreatedWidget> : t.UpdatedDashboard
-        , <Dashboard-Extended t.UpdatedDashboard>
-        : {
-            Success t.ExtendedDashboard
-              , <InsertDashboard t.Ctx t.DashboardId t.UpdatedDashboard> : t.UpdatedDashboards
-              = t.UpdatedDashboards <CreateResponse 200 t.ExtendedDashboard>;
+    , <FindDashboardById t.Ctx t.DashboardId>
+    : {
+        t.Dashboard
+          , <Widget
+              <GenerateId>
+              t.WidgetType
+              t.Title
+              t.Table
+              t.DataColumn
+            >
+          : t.CreatedWidget
+          , <Dashboard-InsertWidget t.Dashboard t.CreatedWidget> : t.UpdatedDashboard
+          , <Dashboard-Extended t.UpdatedDashboard>
+          : {
+              Success t.ExtendedDashboard
+                , <InsertDashboard t.Ctx t.DashboardId t.UpdatedDashboard> : t.UpdatedDashboards
+                = t.UpdatedDashboards <CreateResponse 200 t.ExtendedDashboard>;
 
-            Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
-          };
+              Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
+            };
 
-        /* empty */
-          = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
-    };
+          /* empty */
+            = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
+      };
 
   t.Ctx t.Json
     = t.Ctx

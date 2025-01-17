@@ -20,7 +20,7 @@ $ENTRY ValidateJsonRequest {
 
 
 $ENTRY CreateOptionsResponse {
-  = <CreateResponse 204 (String )>
+  = <EncodeHttpResponse 204 <Headers> /* empty */>
 }
 
 
@@ -49,16 +49,17 @@ $ENTRY CreateErrorResponse {
 
 $ENTRY CreateResponse {
   s.Code t.Json
-    = <EncodeHttpResponse
-        s.Code
-        (
-          (('Content-Type') 'application/json')
-          (('Connection') 'close')
-          (('Access-Control-Allow-Origin') '*')
-          (('Access-Control-Allow-Methods') 'POST, OPTIONS')
-          (('Access-Control-Allow-Headers') 'Content-Type')
-          (('Access-Control-Max-Age') '86400')
-        )
-        <Json-Stringify t.Json>
-      >
+    = <EncodeHttpResponse s.Code <Headers> <Json-Stringify t.Json>>
+}
+
+
+Headers {
+  = (
+      (('Content-Type') 'application/json')
+      (('Connection') 'close')
+      (('Access-Control-Allow-Origin') '*')
+      (('Access-Control-Allow-Methods') 'POST, OPTIONS')
+      (('Access-Control-Allow-Headers') 'Content-Type')
+      (('Access-Control-Max-Age') '86400')
+    )
 }

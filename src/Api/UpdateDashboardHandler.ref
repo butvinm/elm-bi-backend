@@ -15,6 +15,7 @@ $EXTERN
 
 $ENTRY UpdateDashboardHandler {
   t.Ctx t.DashboardCreate
+    , t.DashboardCreate : (Object e.Object)
     , <Dashboard-Id t.DashboardCreate> : t.Id
     , <Dashboard-Title t.DashboardCreate> : t.Title
     , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
