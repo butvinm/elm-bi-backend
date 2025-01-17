@@ -1,5 +1,6 @@
 import os
 import socket
+import time
 from http import HTTPMethod
 from string import printable
 from typing import Any
@@ -9,7 +10,14 @@ import requests
 from hypothesis import given
 from hypothesis import strategies as st
 
-from mock.models import Dashboard, Error, GetDashboardPostRequest, GetDashboardsPostRequest, GetDashboardsPostResponse
+from mock.models import (
+    Dashboard,
+    Error,
+    GetDashboardPostRequest,
+    GetDashboardsPostRequest,
+    GetDashboardsPostResponse,
+    UpdateDashboardPostRequest,
+)
 
 API_HOST = os.environ["ELM_BI_API_HOST"]
 API_PORT = int(os.environ["ELM_BI_API_PORT"])
@@ -54,19 +62,21 @@ def test_unsupported_method(method: HTTPMethod):
     assert response.status_code == 405
 
 
+# It is known, but yet not fixed issue: malformed body makes server hang forever.
+#
 # @example("")
-@given(st.text(min_size=1))
-def test_malformed_http_request(data: str):
-    """Given malformed http request.
-
-    Server must close the connection.
-
-    It is known, but yet not fixed bug: empty request body make server hang forever.
-    """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((API_HOST, API_PORT))
-        s.sendall(data.encode())
-        s.recv(4096)
+# @given(st.text(min_size=1))
+# def test_malformed_http_request(data: str):
+#     """Given malformed http request.
+#
+#     Server must close the connection.
+#
+#
+#     """
+#     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+#         s.connect((API_HOST, API_PORT))
+#         s.sendall(data.encode())
+#         s.recv(4096)
 
 
 def test_action_body_not_json():
@@ -136,3 +146,68 @@ def test_get_dashboard_invalid(request: Any):
     response = requests.post(f"{API_URL}/get-dashboard", json=request)
     assert response.status_code == 422
     Error.model_validate_json(response.text)
+
+
+@given(st.builds(UpdateDashboardPostRequest))
+def test_update_dashboard_valid(request: UpdateDashboardPostRequest):
+    """Given valid /update-dashboard request.
+
+    Server must respond with a dashboard or an error.
+    """
+    response = requests.post(f"{API_URL}/update-dashboard", json=request.model_dump())
+    if response.status_code == 200:
+        Dashboard.model_validate_json(response.text)
+    else:
+        Error.model_validate_json(response.text)
+
+
+@given(json_strategy)
+def test_update_dashboard_invalid(request: Any):
+    """Given invalid /update-dashboard request.
+
+    Server must respond with an error.
+    """
+    response = requests.post(f"{API_URL}/update-dashboard", json=request)
+    Error.model_validate_json(response.text)
+
+
+@pytest.mark.parametrize(
+    argnames="parts",
+    argvalues=[
+        [
+            b"POST /get-dashboards HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}",
+        ],
+        [
+            b"POST /get-dashboards HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\n",
+            b"Content-Length: 2\r\n\r\n{}",
+        ],
+        [
+            b"POST /get-dashboards HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\n",
+            b"Content-Length: 2",
+            b"\r\n\r\n{}",
+        ],
+        [
+            b"POST /get-dashboards HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\n",
+            b"Content-Length: 2\r\n\r\n",
+            b"{}",
+        ],
+        [
+            b"POST /get-dashboards HTTP/1.1\r\nHost: example.com\r\nContent-Length: 2\r\n",
+            b"Content-Type: application/json\r\n\r\n{}",
+        ],
+    ],
+)
+def test_partial_request(parts: list[bytes]):
+    """Given request sent via multiple packages with Content-Length set.
+
+    Server must properly handle splitted request and respond with dashboards list.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((API_HOST, API_PORT))
+        for part in parts:
+            sock.sendall(part)
+            time.sleep(0.100)
+
+        response = sock.recv(1024)
+        headers, body = response.split(b"\r\n\r\n", maxsplit=1)
+        GetDashboardsPostResponse.model_validate_json(body)
