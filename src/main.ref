@@ -1,5 +1,5 @@
 *$FROM Server
-$EXTERN HttpServer-Create, HttpServer-Run;
+$EXTERN HttpServer, HttpServer-Run;
 
 *$FROM Storage
 $EXTERN LoadDashboards, DumpDashboards;
@@ -34,7 +34,7 @@ $ENTRY Go {
   , <LoadDashboards>
   : {
       Success t.Dashboards
-        , <HttpServer-Create t.Dashboards HandleRequest> : t.Server
+        , <HttpServer t.Dashboards HandleRequest> : t.Server
         = <HttpServer-Run t.Server 6969>;
 
       Fails e.Error
@@ -48,42 +48,44 @@ HandleRequest {
   t.Ctx ('OPTIONS') t.URI t.Headers e.Body
     = t.Ctx <CreateOptionsResponse>;
 
-  t.Ctx t.Method t.URI t.Headers e.Body
+  t.Ctx ('POST') t.URI t.Headers e.Body
     , <ValidateJsonRequest t.Headers e.Body>
     : {
         Success t.Json
-          , <Route t.Ctx t.Method t.URI t.Headers t.Json> : t.NewCtx e.Response
+          , <HandleActionRequest t.Ctx t.URI t.Json> : t.NewCtx e.Response
           , <DumpDashboards t.NewCtx> :
           = t.NewCtx e.Response;
 
-        Fails e.Response = t.Ctx  e.Response;
-      }
+        Fails e.Response = t.Ctx e.Response;
+      };
+
+  t.Ctx t.Method t.URI t.Headers e.Body
+    = t.Ctx <CreateErrorResponse 405>;
 }
 
 
-Route {
-  t.Ctx ('POST') ('/get-dashboards') t.Headers t.Json
-    = <GetDashboardsHandler t.Ctx t.Headers t.Json>;
+HandleActionRequest {
+  t.Ctx ('/get-dashboards') t.Json
+    = <GetDashboardsHandler t.Ctx t.Json>;
 
-  t.Ctx ('POST') ('/get-dashboard') t.Headers t.Json
-    = <GetDashboardHandler t.Ctx t.Headers t.Json>;
+  t.Ctx ('/get-dashboard') t.Json
+    = <GetDashboardHandler t.Ctx t.Json>;
 
-  t.Ctx ('POST') ('/create-dashboard') t.Headers t.Json
-    = <CreateDashboardHandler t.Ctx t.Headers t.Json>;
+  t.Ctx ('/create-dashboard') t.Json
+    = <CreateDashboardHandler t.Ctx t.Json>;
 
-  t.Ctx ('POST') ('/update-dashboard') t.Headers t.Json
-    = <UpdateDashboardHandler t.Ctx t.Headers t.Json>;
+  t.Ctx ('/update-dashboard') t.Json
+    = <UpdateDashboardHandler t.Ctx t.Json>;
 
-  t.Ctx ('POST') ('/delete-dashboard') t.Headers t.Json
-    = <DeleteDashboardHandler t.Ctx t.Headers t.Json>;
+  t.Ctx ('/delete-dashboard') t.Json
+    = <DeleteDashboardHandler t.Ctx t.Json>;
 
-  t.Ctx ('POST') ('/add-widget') t.Headers t.Json
-    = <AddWidgetHandler t.Ctx t.Headers t.Json>;
+  t.Ctx ('/add-widget') t.Json
+    = <AddWidgetHandler t.Ctx t.Json>;
 
-  t.Ctx ('POST') ('/delete-widget') t.Headers t.Json
-    = <DeleteWidgetHandler t.Ctx t.Headers t.Json>;
+  t.Ctx ('/delete-widget') t.Json
+    = <DeleteWidgetHandler t.Ctx t.Json>;
 
-  t.Ctx (e.Method) (e.URI) t.Headers t.Json
-    = t.Ctx
-      <CreateErrorResponse 404 'Not Found :('>;
+  t.Ctx (e.URI) t.Json
+    = t.Ctx <CreateErrorResponse 404 'Unknown action'>;
 }

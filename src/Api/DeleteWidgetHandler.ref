@@ -13,8 +13,7 @@ $EXTERN
 
 
 $ENTRY DeleteWidgetHandler {
-  t.Ctx t.Headers
-  t.DeleteWidget
+  t.Ctx t.DeleteWidget
     , <DeleteWidget-DashboardId t.DeleteWidget> : t.DashboardId
     , <DeleteWidget-WidgetId t.DeleteWidget> : t.WidgetId
     , <FindDashboardById t.Ctx t.DashboardId> : {
@@ -38,7 +37,7 @@ $ENTRY DeleteWidgetHandler {
         /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
     };
 
-  t.Ctx t.Headers t.Json
+  t.Ctx t.Json
     = t.Ctx
       <CreateParametersErrorResponse
         t.Json

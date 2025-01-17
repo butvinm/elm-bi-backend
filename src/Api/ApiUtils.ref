@@ -10,7 +10,7 @@ $ENTRY ValidateJsonRequest {
     , <Json-Parse e.Body>
     : {
         Success t.Json = Success t.Json;
-        Fails e.Error = Fails <CreateErrorResponse 422 'Failed to decode json: ' e.Error>;
+        Fails e.Error = Fails <CreateErrorResponse 400 'Failed to decode json: ' e.Error>;
       };
 
   t.Headers e.Body

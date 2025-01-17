@@ -14,8 +14,7 @@ $EXTERN
 
 
 $ENTRY CreateDashboardHandler {
-  t.Ctx t.Headers
-  t.DashboardCreate
+  t.Ctx t.DashboardCreate
     , <Dashboard-Title t.DashboardCreate> : t.Title
     , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
     , <GenerateId> : t.Id
@@ -30,7 +29,7 @@ $ENTRY CreateDashboardHandler {
         Fails e.Error = t.Ctx <CreateErrorResponse 400 e.Error>;
       };
 
-  t.Ctx t.Headers t.Json
+  t.Ctx t.Json
     = t.Ctx
       <CreateParametersErrorResponse
         t.Json

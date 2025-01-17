@@ -17,7 +17,7 @@ $EXTERN
 $EXTERN DecodeHttpRequest;
 
 
-$ENTRY HttpServer-Create {
+$ENTRY HttpServer {
   t.Ctx t.Handler = ((Ctx t.Ctx) (Handler t.Handler));
 }
 
@@ -63,12 +63,20 @@ AcceptLoop {
 }
 
 
+* TODO: optimize excessive e.Body and e.Response copies
 ProcessRequest {
   t.Server s.ClientSocketNo
     , <HttpServer-Ctx t.Server> <HttpServer-Handler t.Server> : t.Ctx t.Handler
-    , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>> : t.Method t.URI t.HttpVersion t.Headers e.Body
-    , <Apply t.Handler t.Ctx t.Method t.URI t.Headers e.Body> : t.NewCtx e.Response
-    , <Socket-Write s.ClientSocketNo e.Response> :
-    , <Socket-Close s.ClientSocketNo> :
-    = <HttpServer-Ctx t.Server t.NewCtx>
+    , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>>
+    : {
+        Success t.Method t.URI t.HttpVersion t.Headers e.Body
+          , <Apply t.Handler t.Ctx t.Method t.URI t.Headers e.Body> : t.NewCtx e.Response
+          , <Socket-Write s.ClientSocketNo e.Response> :
+          , <Socket-Close s.ClientSocketNo> :
+          = <HttpServer-Ctx t.Server t.NewCtx>;
+
+        Fails e.Error
+          , <Socket-Close s.ClientSocketNo> :
+          = <HttpServer-Ctx t.Server t.Ctx>;
+      }
 }

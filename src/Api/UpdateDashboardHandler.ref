@@ -14,8 +14,7 @@ $EXTERN
 
 
 $ENTRY UpdateDashboardHandler {
-  t.Ctx t.Headers
-  t.DashboardCreate
+  t.Ctx t.DashboardCreate
     , <Dashboard-Id t.DashboardCreate> : t.Id
     , <Dashboard-Title t.DashboardCreate> : t.Title
     , <Dashboard-DataSource t.DashboardCreate> : t.DataSource
@@ -35,7 +34,7 @@ $ENTRY UpdateDashboardHandler {
         /* empty */ = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
       };
 
-  t.Ctx t.Headers t.Json
+  t.Ctx t.Json
     = t.Ctx
       <CreateParametersErrorResponse
         t.Json

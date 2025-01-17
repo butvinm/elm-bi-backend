@@ -20,8 +20,7 @@ $EXTERN Widget,
 
 
 $ENTRY AddWidgetHandler {
-  t.Ctx t.Headers
-  t.CreateWidget
+  t.Ctx t.CreateWidget
     , <CreateWidget-DashboardId t.CreateWidget> : t.DashboardId
     , <CreateWidget-Widget t.CreateWidget> : t.Widget
     , <Widget-Title t.Widget> : t.Title
@@ -52,7 +51,7 @@ $ENTRY AddWidgetHandler {
           = t.Ctx <CreateErrorResponse 404 'Dashboard not found'>;
     };
 
-  t.Ctx t.Headers t.Json
+  t.Ctx t.Json
     = t.Ctx
       <CreateParametersErrorResponse
         t.Json

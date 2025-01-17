@@ -4,7 +4,9 @@ $ENTRY DecodeHttpRequest {
   e.Headers '\r\n'
   '\r\n'
   e.Body
-    = (e.Method) (e.URI) (e.HttpVersion) (<DecodeHeaders e.Headers>) e.Body;
+    = Success (e.Method) (e.URI) (e.HttpVersion) (<DecodeHeaders e.Headers>) e.Body;
+
+  e.Wtf = Fails 'Malformed HTTP request';
 }
 
 

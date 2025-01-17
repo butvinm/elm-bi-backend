@@ -17,11 +17,11 @@ $ENTRY Dashboard-Extended {
     : {
         Success s.DataSourceConn
           , <Dashboard-Extended-ExtendWidgets s.DataSourceConn t.Dashboard> : e.DashboardExtended
-          , <DataSource-Finish s.DataSourceConn> : /* empty */
+          , <DataSource-Finish s.DataSourceConn> :
           = e.DashboardExtended;
 
         Fails s.DataSourceConn e.Errors
-          , <DataSource-Finish s.DataSourceConn> : /* empty */
+          , <DataSource-Finish s.DataSourceConn> :
           = Fails e.Errors;
       }
 }

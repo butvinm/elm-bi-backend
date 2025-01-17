@@ -9,11 +9,10 @@ $EXTERN Dashboard-Digest;
 
 
 $ENTRY GetDashboardsHandler {
-  t.Ctx t.Headers
-  (Object /* empty */)
+  t.Ctx (Object /* empty */)
     , t.Ctx : (Array e.Dashboards)
     = t.Ctx <CreateResponse 200 (Array <Map Dashboard-Digest e.Dashboards>)>;
 
-  t.Ctx t.Headers t.Json
+  t.Ctx t.Json
     = t.Ctx <CreateParametersErrorResponse t.Json '{}'>;
 }
