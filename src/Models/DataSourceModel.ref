@@ -50,7 +50,7 @@ $ENTRY DataSource-Password {
 * get
   (Object e.B ((String 'password') t.Password) e.E) = t.Password;
 
-  (Object e.B) = /* empty */;
+  (Object e.B) = Null;
 
 * set
   (Object e.B ((String 'password') t.Password) e.E) t.NewPassword
