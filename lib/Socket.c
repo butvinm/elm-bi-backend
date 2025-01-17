@@ -279,11 +279,11 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Accept, "Socket-Accept") {
 enum { MAX_BODY_SIZE = 4096 };
 
 /*
-Write to the socket.
+Send string representation of the expression to the socket.
 
-<Socket-Write s.SocketNo e.Expr>
+<Socket-Send s.SocketNo e.Expr>
 */
-R05_DEFINE_ENTRY_FUNCTION(Socketm_Write, "Socket-Write") {
+R05_DEFINE_ENTRY_FUNCTION(Socketm_Send, "Socket-Send") {
   char buffer[MAX_BODY_SIZE];
   size_t buffer_len = 0;
 
@@ -337,16 +337,16 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Write, "Socket-Write") {
     buffer_len += len;
 
     if (buffer_len >= MAX_BODY_SIZE - 1) {
-      if (write(socket_fd, buffer, buffer_len) == -1) {
-        r05_builtin_error_errno("Error writing to socket");
+      if (send(socket_fd, buffer, buffer_len, 0) == -1) {
+        r05_builtin_error_errno("Error sending data to the socket");
       }
       buffer_len = 0;
     }
   }
 
   if (buffer_len > 0) {
-    if (write(socket_fd, buffer, buffer_len) == -1) {
-      r05_builtin_error_errno("Error writing to socket");
+    if (send(socket_fd, buffer, buffer_len, 0) == -1) {
+      r05_builtin_error_errno("Error sending data to the socket");
     }
   }
 
@@ -355,11 +355,11 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Write, "Socket-Write") {
 
 
 /*
-Read the socket.
+Receive cchars from the socket.
 
-<Socket-Read s.SocketNo> = e.Expr
+<Socket-Recv s.SocketNo> = s.BytesRead e.Expr
 */
-R05_DEFINE_ENTRY_FUNCTION(Socketm_Read, "Socket-Read") {
+R05_DEFINE_ENTRY_FUNCTION(Socketm_Recv, "Socket-Recv") {
   struct r05_node *sSocketNo;
   if (!r05_svar_left(&sSocketNo, arg_begin->next, arg_end) || R05_DATATAG_NUMBER != sSocketNo->tag) {
     r05_recognition_impossible();
@@ -371,14 +371,14 @@ R05_DEFINE_ENTRY_FUNCTION(Socketm_Read, "Socket-Read") {
   }
 
   char buffer[MAX_BODY_SIZE];
-  size_t buffer_len = read(socket_fd, buffer, sizeof(buffer) - 1);
-  if (buffer_len >= MAX_BODY_SIZE) {
-      r05_builtin_error("Buffer overflow while reading from socket");
+  ssize_t bytes_read = recv(socket_fd, buffer, sizeof(buffer), 0);
+  if (bytes_read == -1) {
+    r05_builtin_error_errno("Error receiving data from the socket");
   }
-  buffer[buffer_len] = '\0';
 
   r05_reset_allocator();
-  r05_alloc_string(buffer);
+  r05_alloc_number(bytes_read);
+  r05_alloc_chars(buffer, bytes_read);
   r05_splice_from_freelist(arg_begin);
   r05_splice_to_freelist(arg_begin, arg_end);
 }

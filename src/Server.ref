@@ -10,8 +10,8 @@ $EXTERN
   Socket-Bind,
   Socket-Listen,
   Socket-Accept,
-  Socket-Write,
-  Socket-Read;
+  Socket-Send,
+  Socket-Recv;
 
 *$FROM Http
 $EXTERN DecodeHttpRequest;
@@ -67,11 +67,11 @@ AcceptLoop {
 ProcessRequest {
   t.Server s.ClientSocketNo
     , <HttpServer-Ctx t.Server> <HttpServer-Handler t.Server> : t.Ctx t.Handler
-    , <DecodeHttpRequest <Socket-Read s.ClientSocketNo>>
+    , <DecodeHttpRequest <ReadRequest s.ClientSocketNo>>
     : {
         Success t.Method t.URI t.HttpVersion t.Headers e.Body
           , <Apply t.Handler t.Ctx t.Method t.URI t.Headers e.Body> : t.NewCtx e.Response
-          , <Socket-Write s.ClientSocketNo e.Response> :
+          , <Socket-Send s.ClientSocketNo e.Response> :
           , <Socket-Close s.ClientSocketNo> :
           = <HttpServer-Ctx t.Server t.NewCtx>;
 
@@ -79,4 +79,66 @@ ProcessRequest {
           , <Socket-Close s.ClientSocketNo> :
           = <HttpServer-Ctx t.Server t.Ctx>;
       }
+}
+
+
+ReadRequest {
+  s.ClientSocketNo
+    = <ReadRequest-ReadContent
+      s.ClientSocketNo
+      <ReadRequest-ReadHeaders s.ClientSocketNo>
+    >
+}
+
+
+ReadRequest-ReadHeaders {
+  s.ClientSocketNo
+    , <Socket-Recv s.ClientSocketNo>
+    : {
+        0 = /* empty */ (/* empty */);
+
+        s.BytesRead e.Headers '\r\n\r\n' e.Body = e.Headers '\r\n' (e.Body);
+
+        s.BytesRead e.Headers = e.Headers <ReadRequest-ReadHeaders s.ClientSocketNo>;
+      }
+}
+
+
+ReadRequest-ReadContent {
+  s.ClientSocketNo e.Headers (e.Body)
+    , e.Headers : e.Headers-B 'Content-Length: ' e.ContentLength '\r\n' e.Headers-E
+    , <Lenw e.Body> : s.BodySize e.1
+    = <ReadRequest-ReadContent-ByContentLength
+        s.ClientSocketNo
+        <Sub <Numb e.ContentLength> s.BodySize>
+        e.Headers
+        (e.Body)
+      >;
+
+  s.ClientSocketNo e.Headers (e.Body)
+    = e.Headers '\r\n' e.Body;
+}
+
+
+ReadRequest-ReadContent-ByContentLength {
+  s.ClientSocketNo 0 e.Headers (e.Body)
+    = e.Headers '\r\n' e.Body;
+
+* If for whatever reason we've read more than required
+  s.ClientSocketNo '-' s.Remained e.Headers (e.Body)
+    = e.Headers '\r\n' e.Body;
+
+  s.ClientSocketNo s.Remained e.Headers (e.Body)
+    , <Socket-Recv s.ClientSocketNo>
+    : {
+        0 = e.Headers '\r\n' e.Body;
+
+        s.BytesRead e.Content
+          = <ReadRequest-ReadContent-ByContentLength
+              s.ClientSocketNo
+              <Sub s.Remained s.BytesRead>
+              e.Headers
+              (e.Body e.Content)
+            >;
+      };
 }
