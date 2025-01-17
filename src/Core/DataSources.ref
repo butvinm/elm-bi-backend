@@ -111,7 +111,19 @@ DataSource-ConnInfo {
       'user=' e.Username ' '
       'password=' e.Password ' '
       'dbname=' e.Database ' '
-      'connect_timeout=10'
+      'connect_timeout=10';
+
+  t.DataSource
+  , <DataSource-Host t.DataSource> : (String e.Host)
+  , <DataSource-Port t.DataSource> : (Number (e.Port) () ())
+  , <DataSource-Username t.DataSource> : (String e.Username)
+  , <DataSource-Password t.DataSource> : Null
+  , <DataSource-Database t.DataSource> : (String e.Database)
+    = 'host=' e.Host ' '
+      'port=' <Symb e.Port> ' '
+      'user=' e.Username ' '
+      'dbname=' e.Database ' '
+      'connect_timeout=10';
 }
 
 
